@@ -32,6 +32,17 @@ namespace Networking_Encryption
 
         private BinNode root = null;
         private byte[] EncodedData = null;
+        private bool isNull = true;
+
+        #region Get Functions
+        /// <summary>
+        /// Is true if Tree is completely empty else false
+        /// </summary>
+        public bool IsNull
+        {
+            get { return isNull; }
+        }
+        #endregion
 
         #region Encode Functions
         /// <summary>

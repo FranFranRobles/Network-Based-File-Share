@@ -347,6 +347,27 @@ namespace Networking_Encryption
 
             return keys;
         }
+        /// <summary>
+        ///  Compresses a given message and encrypts it
+        ///  <para>Returns an encrypted string</para>
+        /// </summary>
+        /// <param name="message">message to compress & encrypt</param>
+        /// <param name="seed"> value to use as the seed</param>
+        /// <returns>an encrypted stirng</returns>
+        public string CompressEncrypt(string message, string seed = null)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// Compresses a file then encrypts it
+        /// </summary>
+        /// <param name="inputFile">file to compres and encrypt</param>
+        /// <param name="outputFile">file to save to encryption</param>
+        /// <param name="seed">value to use as the seed</param>
+        public void CompressEncrypt(string inputFile,string outputFile, string seed = null)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
 
         #region Decrypion Functions
@@ -391,6 +412,21 @@ namespace Networking_Encryption
                     aes.Decrypt(inputStream, outputStream);
                 }
             }
+        }
+        /// <summary>
+        /// Decompresses and Decrypts the given msg
+        /// <para>Returns a decrypted & decompressed string</para>
+        /// </summary>
+        /// <param name="encryptedMsg">msg to decrypt and decompress</param>
+        /// <param name="seed"> seed value to use</param>
+        /// <returns>returns a decrypted & decompressed string</returns>
+        public string DecompressDecrypt(string encryptedMsg, string seed = null)
+        {
+            throw new NotImplementedException();
+        }
+        public void DecompressDecrypt(string inputFile, string outputFile,string seed = null)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 
