@@ -8,938 +8,873 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Resources;
 using Networking_EncryptionTests.Properties;
-
-/* 
- * add a function for path parse
- * fix string encryption with the pair class
- * add test for invalid pair with decryption
- */ 
+/*
+ * CodeMetrics: 59  61  1   12  641
+ */
 namespace Networking_Encryption.Tests
 {
-    enum EncryptionMode { Null, RijDanael, Aes };
 
     [TestClass()]
     public class EncryptionTests
     {
+        const string word = "this is a test";
+        const string seedOne = "1";
+        const string seedTwo = "2";
+
+        #region FileCompare Tests
         [TestMethod()]
-        public void compareFileAreEqual()
+        public void FileCompareAreEqual()
         {
-            string fileOne = Directory.GetParent(Files.TextToEncryptOne).FullName + Files.TextToEncryptOne;
-            string fileTwo = Directory.GetParent(Files.TextToEncryptTwo).FullName + Files.TextToEncryptTwo;
-            Encryption encryptor = new Encryption();
-            Assert.IsTrue(encryptor.compareFile(@fileOne, @fileTwo), "Test: 1");
+            string fileOne = GetPath(Files.TextToEncryptOne);
+            string fileTwo = GetPath(Files.TextToEncryptTwo);
+            Assert.IsTrue(Encryption.FileCompare(@fileOne, @fileTwo), "File Compare Funct");
         }
         [TestMethod()]
-        public void compareFileSameFile()
+        public void FileCompareSameFile()
         {
-            string fileOne = Directory.GetParent(Files.TextToEncryptOne).FullName + Files.TextToEncryptOne;
-            Encryption encryptor = new Encryption();
-            Assert.IsTrue(encryptor.compareFile(fileOne, fileOne), "Test: 1");
+            string fileOne = GetPath(Files.TextToEncryptOne);
+            Assert.IsTrue(Encryption.FileCompare(fileOne, fileOne), "File Compare Funct");
         }
-        public void compareFileNotEqual()
+        public void FileCompareNotEqual()
         {
-            string fileOne = Directory.GetParent(Files.TextToEncryptOne).FullName + Files.TextToEncryptOne;
-            string fileTwo = Directory.GetParent(Files.DecryptedTextOne).FullName + Files.DecryptedTextOne;
-            Encryption encryptor = new Encryption();
-            Assert.IsFalse(encryptor.compareFile(fileOne, fileTwo), "Test: 1");
+            string fileOne = GetPath(Files.TextToEncryptOne);
+            string fileTwo = GetPath(Files.DecryptedTextOne);
+            Assert.IsFalse(Encryption.FileCompare(fileOne, fileTwo), "File Compare Funct");
         }
+        #endregion
+
+        #region Encryption Tests
+
+        #region Encryption Random Encrpt Tests
         [TestMethod()]
         public void EncryptStringTest()
         {
-            string word = "this is a test";
             Encryption encryptor = new Encryption();
             KeyHolder keys = null;
-            string cipherText = encryptor.EncryptStr(word,ref keys);
+            string cipherText = encryptor.EncryptStr(word, ref keys);
             checkPairNotNull(keys);
-            Assert.AreNotEqual(word, cipherText, "Test: 1");
-            Assert.IsTrue(cipherText.Count() > word.Count(), "Test: 2");
+            TestEncryption(cipherText);
         }
-        [TestMethod()]
-        public void EncryptStringSameSeedTest()
-        {
-            string word = "this is a test";
-            string seed = "1";
-            Encryption encryptor1 = new Encryption();
-            Encryption encryptor2 = new Encryption();
-            KeyHolder keyOne = null;
-            KeyHolder keyTwo = null;
-            string cipherText = encryptor1.EncryptStr(word,ref keyOne, seed);
-            Assert.AreNotEqual(word, cipherText);
-            Assert.IsTrue(cipherText.Count() > word.Count());
-            Assert.AreNotEqual(cipherText, encryptor2.EncryptStr(word,ref keyTwo, seed));
-            checkSameSeed(keyOne, keyTwo,EncryptionMode.RijDanael);
-        }
+
         [TestMethod()]
         public void EncryptTxtFileTest()
         {
-            string fileToEncrypt = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveDestination = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
+            string fileToEncrypt = GetPath(Files.TextToEncryptOne);
+            string saveDestination = GetPath(Files.EncryptedTextOne);
             Encryption encryptor = new Encryption();
             KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveDestination);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveDestination));
+            TestEncryptDecryption(fileToEncrypt, saveDestination);
             checkPairNotNull(keys);
         }
-        [TestMethod()]
-        public void EncryptTxtFileSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.TextToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1,seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1),"test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkSameSeed(keyOne, keyTwo);
-        }
+
         [TestMethod()]
         public void EncryptPdfTest()
         {
-            string fileToEncrypt = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveDestination = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
+            string fileToEncrypt = GetPath(Files.PdfToEncryptOne);
+            string saveDestination = GetPath(Files.EncryptedPdfOne);
             Encryption encryptor = new Encryption();
             KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveDestination);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveDestination));
+            TestEncryptDecryption(fileToEncrypt, saveDestination);
             checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void EncryptPdfSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PdfToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkSameSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptImgPngTest()
         {
-            string fileToEncrypt = Directory.GetParent(Files.PngToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptOne);
-            string saveDestination = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
+            string fileToEncrypt = GetPath(Files.PngToEncryptOne);
+            string saveDestination = GetPath(Files.EncryptedPngOne);
             Encryption encryptor = new Encryption();
             KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveDestination);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveDestination));
+            TestEncryptDecryption(fileToEncrypt, saveDestination);
             checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void EncryptImgPngSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.PngToEncryptOne).FullName + Files.PngToEncryptOne;
-            string saveDestination1 = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PngToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkSameSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void EncryptImgJpegTest()
-        {
-            string fileToEncrypt = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveDestination = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            Encryption encryptor = new Encryption();
-            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveDestination);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveDestination));
-            checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void EncryptImgJpegSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.JpegToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkSameSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptImgGifTest()
         {
-            string fileToEncrypt = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveDestination = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
+            string fileToEncrypt = GetPath(Files.GifToEncryptOne);
+            string saveDestination = GetPath(Files.EncryptedGifOne);
             Encryption encryptor = new Encryption();
             KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveDestination);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveDestination));
+            TestEncryptDecryption(fileToEncrypt, saveDestination);
             checkPairNotNull(keys);
+        }
+        [TestMethod()]
+        public void EncryptImgJpegTest()
+        {
+            string fileToEncrypt = GetPath(Files.JpegToEncryptOne);
+            string saveDestination = GetPath(Files.EncryptedJpegOne);
+            Encryption encryptor = new Encryption();
+            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveDestination);
+            TestEncryptDecryption(fileToEncrypt, saveDestination);
+            checkPairNotNull(keys);
+        }
+        #endregion
+
+        #region Same Seed Tests
+        [TestMethod()]
+        public void EncryptStringSameSeedTest()
+        {
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = null;
+            KeyHolder keyTwo = null;
+            string cipherText = encryptor.EncryptStr(word, ref keyOne, seedOne);
+            TestEncryption(cipherText);
+            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(word, ref keyTwo, seedOne));
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptTxtFileSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.TextToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedTextOne);
+            string fileToEncrypt2 = GetPath(Files.TextToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedTextTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+
+        [TestMethod()]
+        public void EncryptPdfSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.PdfToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedPdfOne);
+            string fileToEncrypt2 = GetPath(Files.PdfToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedPdfTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptImgPngSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.PngToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedPngOne);
+            string fileToEncrypt2 = GetPath(Files.PngToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedPngTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptImgJpegSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.JpegToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedJpegOne);
+            string fileToEncrypt2 = GetPath(Files.JpegToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedJpegTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkSameSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptImgGifSameSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.GifToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifTwo);
-            string seed = "1";
+            string fileToEncrypt1 = GetPath(Files.GifToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedGifOne);
+            string fileToEncrypt2 = GetPath(Files.GifToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedGifTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
             checkSameSeed(keyOne, keyTwo);
         }
-        [TestMethod()]
-        public void DecryptStringTest()
-        {
-            string word = "this is a test";
-            Encryption encryptor = new Encryption();
-            KeyHolder keys = null;
-            string cipherText = encryptor.EncryptStr(word,ref keys);
-            Assert.AreNotEqual(word, cipherText, "Test: 1");
-            Assert.IsTrue(cipherText.Count() > word.Count(), "Test: 2");
-            Assert.AreEqual(word, encryptor.Decrypt(cipherText,keys), "Test: 3");
-            checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void DecryptStringSameSeedTest()
-        {
-            string word = "this is a test";
-            string seed = "1";
-            Encryption encryptor1 = new Encryption();
-            Encryption encryptor2 = new Encryption();
-            KeyHolder keyOne = null;
-            KeyHolder keyTwo = null;
-            string cipherText = encryptor1.EncryptStr(word,ref keyOne, seed);
-            string cipherText2 = encryptor2.EncryptStr(word,ref keyTwo, seed);
-            Assert.AreNotEqual(word, cipherText, "Test: 1");
-            Assert.IsTrue(cipherText.Count() > word.Count(), "Test: 2");
-            Assert.AreNotEqual(cipherText, cipherText2, "Test: 3");
-            string newText = encryptor1.Decrypt(cipherText, keyOne);
-            string newText2 = encryptor2.Decrypt(cipherText2, keyTwo);
-            Assert.AreEqual(word, newText, "test 4");
-            Assert.AreEqual(word, newText2, "test 5");
-            Assert.AreEqual(newText, newText2, "test 6");
-            checkSameSeed(keyOne, keyTwo,EncryptionMode.RijDanael);
-        }
-        [TestMethod()]
-        public void DecryptTxtFileTest()
-        {
-            string fileToEncrypt = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveEncryption = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
-            string saveDecryption = Directory.GetParent(Files.DecryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextOne);
-            Encryption encryptor = new Encryption();
-            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveEncryption);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveEncryption),"test 1");
-            checkPairNotNull(keys);
-            encryptor.Decrypt(saveEncryption, saveDecryption, keys);
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt, saveDecryption), "test 2");
-            Assert.IsFalse(encryptor.compareFile(saveDecryption, saveEncryption), "test 3");
-        }
-        [TestMethod()]
-        public void DecryptTxtFileSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.TextToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1,saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
-            checkSameSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void DecryptPdfTest()
-        {
-            string fileToEncrypt = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveEncryption = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
-            string savedecryption = Directory.GetParent(Files.DecryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfOne);
-            Encryption encryptor = new Encryption();
-            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveEncryption);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveEncryption), "test 1");
-            encryptor.Decrypt(saveEncryption, savedecryption, keys);
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt, savedecryption), "test 2");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption, savedecryption), "test 3");
-            checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void DecryptPdfSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PdfToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
-            checkSameSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void DecryptImgPngTest()
-        {
-            string fileToEncrypt = Directory.GetParent(Files.PngToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptOne);
-            string saveEncryption = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
-            string saveDecryption = Directory.GetParent(Files.DecryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngOne);
-            Encryption encryptor = new Encryption();
-            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveEncryption);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveEncryption),"test 1");
-            encryptor.Decrypt(saveEncryption, saveDecryption, keys);
-            Assert.IsFalse(encryptor.compareFile(saveDecryption,saveEncryption),"test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt, saveDecryption), "test 3");
-            checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void DecryptImgPngSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.PngToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PngToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
-            checkSameSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void DecryptImgJpegTest()
-        {
-            string fileToEncrypt = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveEncryption = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            string saveDecryption = Directory.GetParent(Files.DecryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegOne);
-            Encryption encryptor = new Encryption();
-            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveEncryption);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveEncryption),"test 1");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption, saveDecryption), "test 2");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption, fileToEncrypt), "test 3");
-            checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void DecryptImgJpegSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.JpegToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
-            checkSameSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void DecryptImgGifTest()
-        {
-            string fileToEncrypt = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveEncryption = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
-            string saveDecryption = Directory.GetParent(Files.DecryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifOne);
-            Encryption encryptor = new Encryption();
-            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, saveEncryption);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt, saveEncryption),"test 1");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt, saveDecryption), "test 2");
-            Assert.IsFalse(encryptor.compareFile(saveDecryption, saveEncryption), "test 3");
-            checkPairNotNull(keys);
-        }
-        [TestMethod()]
-        public void DecryptImgGifSameSeedTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.GifToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifTwo);
-            string seed = "1";
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seed);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
-            checkSameSeed(keyOne, keyTwo);
-        }
-        //static String prependFile()
-        [TestMethod()]
-        public void testResourceLocations()
-        {
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedGifOne).FullName) + "\\" +  FileExtFuncts.removePaths(Files.DecryptedGifOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedGifTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedJpegOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedJpegTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedPdfOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedPdfTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedPngOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedPngTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedTextOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.DecryptedTextTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedGifOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedGifTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedJpegOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedJpegTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedPdfOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedPdfTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedPngOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedPngTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedTextOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.EncryptedTextTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.GifToEncryptOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.GifToEncryptTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.JpegToEncryptOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.JpegToEncryptTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.PdfToEncryptOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.PdfToEncryptTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.PngToEncryptOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.PngToEncryptTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptTwo)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.TextToEncryptOne).FullName) + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne)));
-            Assert.IsTrue(File.Exists((Directory.GetParent(Files.TextToEncryptTwo).FullName) + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptTwo)));
-        }
+        #endregion
+
+        #region Dif Seed Tests
         [TestMethod()]
         public void EncryptStringDifSeedTest()
         {
-            string word = "this is a test";
-            string seedOne = "1";
-            string seedTwo = "2";
-            Encryption encryptor1 = new Encryption();
-            Encryption encryptor2 = new Encryption();
+            Encryption encryptor = new Encryption();
             KeyHolder keyOne = null;
             KeyHolder keyTwo = null;
-            string cipherText = encryptor1.EncryptStr(word,ref keyOne, seedOne);
-            Assert.AreNotEqual(word, cipherText, "Test: 1");
-            Assert.IsTrue(cipherText.Count() > word.Count(), "Test: 2");
-            Assert.AreNotEqual(cipherText, encryptor2.EncryptStr(word,ref keyTwo, seedTwo), "Test: 3");
-            checkDifSeed(keyOne, keyTwo,EncryptionMode.RijDanael);
+            string cipherText = encryptor.EncryptStr(word, ref keyOne, seedOne);
+            TestEncryption(cipherText);
+            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(word, ref keyTwo, seedTwo), "Encrypted Texts Are Not Different");
+            checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptTxtFileDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.TextToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.TextToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedTextOne);
+            string fileToEncrypt2 = GetPath(Files.TextToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedTextTwo);
             Encryption encryptor = new Encryption();
             KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
             KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1,saveDestination1,fileToEncrypt2,saveDestination2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptPdfDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PdfToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.PdfToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedPdfOne);
+            string fileToEncrypt2 = GetPath(Files.PdfToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedPdfTwo);
             Encryption encryptor = new Encryption();
             KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
             KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptImgPngDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.PngToEncryptOne).FullName + Files.PngToEncryptOne;
-            string saveDestination1 = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PngToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.PngToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedPngOne);
+            string fileToEncrypt2 = GetPath(Files.PngToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedPngTwo);
             Encryption encryptor = new Encryption();
             KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
             KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptImgJpegDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.JpegToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.JpegToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedJpegOne);
+            string fileToEncrypt2 = GetPath(Files.JpegToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedJpegTwo);
             Encryption encryptor = new Encryption();
             KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
             KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void EncryptImgGifDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.GifToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.GifToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedGifOne);
+            string fileToEncrypt2 = GetPath(Files.GifToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedGifTwo);
             Encryption encryptor = new Encryption();
             KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
             KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
             checkDifSeed(keyOne, keyTwo);
         }
-        public void DecryptStringDifSeedTest()
+        #endregion
+
+        #region Different Encryptor Tests
+        [TestMethod()]
+        public void EncryptStringDifSeedKeyTest()
         {
-            string word = "this is a test";
-            string seedOne = "1";
-            string seedTwo = "2";
-            Encryption encryptor1 = new Encryption();
-            Encryption encryptor2 = new Encryption();
+            Encryption encryptor = new Encryption();
             KeyHolder keyOne = null;
             KeyHolder keyTwo = null;
-            string cipherText = encryptor1.EncryptStr(word,ref keyOne, seedOne);
-            string cipherText2 = encryptor2.EncryptStr(word,ref keyTwo, seedTwo);
-            Assert.AreNotEqual(word, cipherText, "Test: 1");
-            Assert.IsTrue(cipherText.Count() > word.Count(), "Test: 2");
-            Assert.AreEqual(cipherText, cipherText2, "Test: 3");
-            string newText = encryptor1.Decrypt(cipherText, keyOne);
-            string newText2 = encryptor2.Decrypt(cipherText2, keyTwo);
-            Assert.AreEqual(word, newText, "test 4");
-            Assert.AreEqual(word, newText2, "test 5");
-            Assert.AreEqual(newText, newText2, "test 6");
+            string cipherText = encryptor.EncryptStr(word, ref keyOne);
+            TestEncryption(cipherText);
+            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(word, ref keyTwo), "Strings encrypted to the same thing");
+            checkDifSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptTxtFileDifSeedKeyTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.TextToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedTextOne);
+            string fileToEncrypt2 = GetPath(Files.TextToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedTextTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1,saveDestination1,fileToEncrypt2,saveDestination2);
+            checkDifSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptPdfDifSeedKeyTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.PdfToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedPdfOne);
+            string fileToEncrypt2 = GetPath(Files.PdfToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedPdfTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkDifSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptImgPngDifSeedKeyTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.PngToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedPngOne);
+            string fileToEncrypt2 = GetPath(Files.PngToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedPngTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkDifSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptImgJpegDifSeedKeyTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.JpegToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedJpegOne);
+            string fileToEncrypt2 = GetPath(Files.JpegToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedJpegTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkDifSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void EncryptImgGifDifSeedKeyTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.GifToEncryptOne);
+            string saveDestination1 = GetPath(Files.EncryptedGifOne);
+            string fileToEncrypt2 = GetPath(Files.GifToEncryptTwo);
+            string saveDestination2 = GetPath(Files.EncryptedGifTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
+            TestEncryptDecryption(fileToEncrypt1, saveDestination1);
+            TestEncryptDecryption(fileToEncrypt2, saveDestination2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, saveDestination1, fileToEncrypt2, saveDestination2);
+            checkDifSeed(keyOne, keyTwo);
+        }
+        #endregion
+        #endregion
+
+        #region Decryption Tests
+
+        #region Random Decrypt Tests
+        [TestMethod()]
+        public void DecryptStringTest()
+        {
+            Encryption encryptor = new Encryption();
+            KeyHolder keys = null;
+            string cipherText = encryptor.EncryptStr(word, ref keys);
+            checkPairNotNull(keys);
+            TestEncryption(cipherText);
+            Assert.AreEqual(word, encryptor.Decrypt(cipherText, keys), "Decrypted text is not the same original text");
+            checkPairNotNull(keys);
+        }
+        [TestMethod()]
+        public void DecryptTxtFileTest()
+        {
+            string fileToEncrypt = GetPath(Files.TextToEncryptOne);
+            string encryptedFile = GetPath(Files.EncryptedTextOne);
+            string decryptedFile = GetPath(Files.DecryptedTextOne);
+            Encryption encryptor = new Encryption();
+            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, encryptedFile);
+            TestEncryptDecryption(fileToEncrypt, encryptedFile);
+            checkPairNotNull(keys);
+            encryptor.Decrypt(encryptedFile, decryptedFile, keys);
+            TestEncryptDecryption(decryptedFile,encryptedFile);
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt, decryptedFile), "Decrypted File Not Same Len As Orginal File");
+        }
+        [TestMethod()]
+        public void DecryptPdfTest()
+        {
+            string fileToEncrypt = GetPath(Files.PdfToEncryptOne);
+            string encryptedFile = GetPath(Files.EncryptedPdfOne);
+            string decryptedFile = GetPath(Files.DecryptedPdfOne);
+            Encryption encryptor = new Encryption();
+            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, encryptedFile);
+            TestEncryptDecryption(fileToEncrypt, encryptedFile);
+            checkPairNotNull(keys);
+            encryptor.Decrypt(encryptedFile, decryptedFile, keys);
+            TestEncryptDecryption(decryptedFile, encryptedFile);
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt, decryptedFile), "Decrypted File Not Same Len As Orginal File");
+        }
+        [TestMethod()]
+        public void DecryptImgPngTest()
+        {
+            string fileToEncrypt = GetPath(Files.PngToEncryptOne);
+            string encryptedFile = GetPath(Files.EncryptedPngOne);
+            string decryptedFile = GetPath(Files.DecryptedPngOne);
+            Encryption encryptor = new Encryption();
+            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, encryptedFile);
+            TestEncryptDecryption(fileToEncrypt, encryptedFile);
+            checkPairNotNull(keys);
+            encryptor.Decrypt(encryptedFile, decryptedFile, keys);
+            TestEncryptDecryption(decryptedFile, encryptedFile);
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt, decryptedFile), "Decrypted File Not Same Len As Orginal File");
+        }
+        [TestMethod()]
+        public void DecryptImgGifTest()
+        {
+            string fileToEncrypt = GetPath(Files.GifToEncryptOne);
+            string EncryptedFile = GetPath(Files.EncryptedGifOne);
+            string DecryptedFile = Directory.GetParent(Files.DecryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifOne);
+            Encryption encryptor = new Encryption();
+            KeyHolder keys = encryptor.Encrypt(fileToEncrypt, EncryptedFile);
+            TestEncryptDecryption(fileToEncrypt, EncryptedFile);
+            checkPairNotNull(keys);
+            encryptor.Decrypt(EncryptedFile, DecryptedFile, keys);
+            TestEncryptDecryption(DecryptedFile, EncryptedFile);
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt, DecryptedFile), "Decrypted File Not Same Len As Orginal File");
+        }
+        #endregion
+
+        #region Same Seed Tests
+        [TestMethod()]
+        public void DecryptStringSameSeedTest()
+        {
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = null;
+            KeyHolder keyTwo = null;
+            string cipherText1 = encryptor.EncryptStr(word, ref keyOne, seedOne);
+            string cipherText2 = encryptor.EncryptStr(word, ref keyTwo, seedOne);
+            TestEncryption(cipherText1);
+            Assert.AreNotEqual(cipherText1, encryptor.EncryptStr(word, ref keyTwo, seedOne));
+            checkSameSeed(keyOne, keyTwo);
+            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, keyOne), encryptor.Decrypt(cipherText1, keyOne));
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void DecryptTxtFileSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.TextToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.TextToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedTextOne);
+            string encryptedFile2 = GetPath(Files.EncryptedTextTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedTextOne);
+            string decryptedFile2 = GetPath(Files.DecryptedTextTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void DecryptPdfSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.PdfToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.PdfToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedPdfOne);
+            string encryptedFile2 = GetPath(Files.EncryptedPdfTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedPdfOne);
+            string decryptedFile2 = GetPath(Files.DecryptedPdfTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void DecryptImgPngSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.PngToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.PngToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedPngOne);
+            string encryptedFile2 = GetPath(Files.EncryptedPngTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedPngOne);
+            string decryptedFile2 = GetPath(Files.DecryptedPngTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void DecryptImgJpegSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.JpegToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.JpegToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedJpegOne);
+            string encryptedFile2 = GetPath(Files.EncryptedJpegTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedJpegOne);
+            string decryptedFile2 = GetPath(Files.DecryptedJpegTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        public void DecryptImgGifSameSeedTest()
+        {
+            string fileToEncrypt1 = GetPath(Files.GifToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.GifToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedGifOne);
+            string encryptedFile2 = GetPath(Files.EncryptedGifTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedGifOne);
+            string decryptedFile2 = GetPath(Files.DecryptedGifTwo);
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedOne);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkSameSeed(keyOne, keyTwo);
+        }
+        #endregion
+
+        #region Dif Seed Tests
+        [TestMethod()]
+        public void DecryptStringDifSeedTest()
+        {
+            Encryption encryptor = new Encryption();
+            KeyHolder keyOne = null;
+            KeyHolder keyTwo = null;
+            string cipherText1 = encryptor.EncryptStr(word, ref keyOne, seedOne);
+            string cipherText2 = encryptor.EncryptStr(word, ref keyTwo, seedTwo);
+            TestEncryption(cipherText1);
+            TestEncryption(cipherText2);
+            Assert.AreNotEqual(cipherText1, cipherText2, "Encrypted Texts Are Not Different");
+            checkDifSeed(keyOne, keyTwo);
+            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, keyOne), encryptor.Decrypt(cipherText1, keyOne));
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptTxtFileDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.TextToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.TextToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.TextToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedTextOne);
+            string encryptedFile2 = GetPath(Files.EncryptedTextTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedTextOne);
+            string decryptedFile2 = GetPath(Files.DecryptedTextTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedTwo);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptPdfDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PdfToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.PdfToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.PdfToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedPdfOne);
+            string encryptedFile2 = GetPath(Files.EncryptedPdfTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedPdfOne);
+            string decryptedFile2 = GetPath(Files.DecryptedPdfTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedTwo);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptImgPngDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.PngToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PngToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.PngToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.PngToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedPngOne);
+            string encryptedFile2 = GetPath(Files.EncryptedPngTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedPngOne);
+            string decryptedFile2 = GetPath(Files.DecryptedPngTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedTwo);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptImgJpegDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.JpegToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.JpegToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.JpegToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedJpegOne);
+            string encryptedFile2 = GetPath(Files.EncryptedJpegTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedJpegOne);
+            string decryptedFile2 = GetPath(Files.DecryptedJpegTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedTwo);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptImgGifDifSeedTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.GifToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifTwo);
-            string seedOne = "1";
-            string seedTwo = "2";
+            string fileToEncrypt1 = GetPath(Files.GifToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.GifToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedGifOne);
+            string encryptedFile2 = GetPath(Files.EncryptedGifTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedGifOne);
+            string decryptedFile2 = GetPath(Files.DecryptedGifTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1, seedOne);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2, seedTwo);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, seedOne);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, seedTwo);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
-        [TestMethod()]
-        public void EncryptStringDifAlgoTest()
-        {
-            string word = "this is a test";
-            Encryption encryptor1 = new Encryption();
-            Encryption encryptor2 = new Encryption();
-            KeyHolder keyOne = null;
-            KeyHolder keyTwo = null;
-            string cipherText = encryptor1.EncryptStr(word,ref keyOne);
-            Assert.AreNotEqual(word, cipherText, "Test: 1");
-            Assert.IsTrue(cipherText.Count() > word.Count(), "Test: 2");
-            Assert.AreNotEqual(cipherText, encryptor2.EncryptStr(word,ref keyTwo), "Test: 3");
-            checkDifSeed(keyOne, keyTwo,EncryptionMode.RijDanael);
-        }
-        [TestMethod()]
-        public void EncryptTxtFileDifAlgoTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.TextToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextTwo);
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkDifSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void EncryptPdfDifAlgoTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PdfToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfTwo);
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkDifSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void EncryptImgPngDifAlgoTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.PngToEncryptOne).FullName + Files.PngToEncryptOne;
-            string saveDestination1 = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PngToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngTwo);
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne  = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkDifSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void EncryptImgJpegDifAlgoTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.JpegToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegTwo);
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkDifSeed(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        public void EncryptImgGifDifAlgoTest()
-        {
-            string fileToEncrypt1 = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveDestination1 = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.GifToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptTwo);
-            string saveDestination2 = Directory.GetParent(Files.EncryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifTwo);
-            Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveDestination1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveDestination1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveDestination2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveDestination2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveDestination1, saveDestination2), "test 4");
-            checkDifSeed(keyOne, keyTwo);
-        }
+        #endregion
+
+        #region Dif Algo Tests
         public void DecryptStringDifAlgoTest()
         {
-            string word = "this is a test";
-            Encryption encryptor1 = new Encryption();
-            Encryption encryptor2 = new Encryption();
+            Encryption encryptor = new Encryption();
             KeyHolder keyOne = null;
             KeyHolder keyTwo = null;
-            string cipherText = encryptor1.EncryptStr(word,ref keyOne);
-            string cipherText2 = encryptor2.EncryptStr(word,ref keyTwo);
-            Assert.AreNotEqual(word, cipherText, "Test: 1");
-            Assert.IsTrue(cipherText.Count() > word.Count(), "Test: 2");
-            Assert.AreEqual(cipherText, cipherText2, "Test: 3");
-            string newText = encryptor1.Decrypt(cipherText, keyOne);
-            string newText2 = encryptor2.Decrypt(cipherText2, keyTwo);
-            Assert.AreEqual(word, newText, "test 4");
-            Assert.AreEqual(word, newText2, "test 5");
-            Assert.AreEqual(newText, newText2, "test 6");
+            string cipherText1 = encryptor.EncryptStr(word, ref keyOne);
+            string cipherText2 = encryptor.EncryptStr(word, ref keyTwo);
+            TestEncryption(cipherText1);
+            Assert.AreNotEqual(cipherText1, cipherText2, "Strings encrypted to the same thing");
+            checkDifSeed(keyOne, keyTwo);
+            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, keyOne), encryptor.Decrypt(cipherText1, keyOne));
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptTxtFileDifAlgoTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.TextToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.TextToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.TextToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedTextTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedTextOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedTextTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedTextTwo);
+            string fileToEncrypt1 = GetPath(Files.TextToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.TextToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedTextOne);
+            string encryptedFile2 = GetPath(Files.EncryptedTextTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedTextOne);
+            string decryptedFile2 = GetPath(Files.DecryptedTextTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptPdfDifAlgoTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.PdfToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PdfToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PdfToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPdfTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedPdfOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedPdfTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPdfTwo);
+            string fileToEncrypt1 = GetPath(Files.PdfToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.PdfToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedPdfOne);
+            string encryptedFile2 = GetPath(Files.EncryptedPdfTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedPdfOne);
+            string decryptedFile2 = GetPath(Files.DecryptedPdfTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptImgPngDifAlgoTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.PngToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.PngToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.PngToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedPngTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedPngOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedPngTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedPngTwo);
+            string fileToEncrypt1 = GetPath(Files.PngToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.PngToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedPngOne);
+            string encryptedFile2 = GetPath(Files.EncryptedPngTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedPngOne);
+            string decryptedFile2 = GetPath(Files.DecryptedPngTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptImgJpegDifAlgoTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.JpegToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.JpegToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.JpegToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedJpegTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedJpegOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedJpegTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedJpegTwo);
+            string fileToEncrypt1 = GetPath(Files.JpegToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.JpegToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedJpegOne);
+            string encryptedFile2 = GetPath(Files.EncryptedJpegTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedJpegOne);
+            string decryptedFile2 = GetPath(Files.DecryptedJpegTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
         [TestMethod()]
         public void DecryptImgGifDifAlgoTest()
         {
-            string fileToEncrypt1 = Directory.GetParent(Files.GifToEncryptOne).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptOne);
-            string saveEncryption1 = Directory.GetParent(Files.EncryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifOne);
-            string fileToEncrypt2 = Directory.GetParent(Files.GifToEncryptTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.GifToEncryptTwo);
-            string saveEncryption2 = Directory.GetParent(Files.EncryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.EncryptedGifTwo);
-            string saveDecryption1 = Directory.GetParent(Files.DecryptedGifOne).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifOne);
-            string saveDecryption2 = Directory.GetParent(Files.DecryptedGifTwo).FullName + "\\" + FileExtFuncts.removePaths(Files.DecryptedGifTwo);
+            string fileToEncrypt1 = GetPath(Files.GifToEncryptOne);
+            string fileToEncrypt2 = GetPath(Files.GifToEncryptTwo);
+            string encryptedFile1 = GetPath(Files.EncryptedGifOne);
+            string encryptedFile2 = GetPath(Files.EncryptedGifTwo);
+            string decryptedFile1 = GetPath(Files.DecryptedGifOne);
+            string decryptedFile2 = GetPath(Files.DecryptedGifTwo);
             Encryption encryptor = new Encryption();
-            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, saveEncryption1);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt1, saveEncryption1), "test 1");
-            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, saveEncryption2);
-            Assert.IsFalse(encryptor.compareFile(fileToEncrypt2, saveEncryption2), "test 2");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, fileToEncrypt2), "test 3");
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveEncryption2), "test 4");
-            encryptor.Decrypt(saveEncryption1, saveDecryption1, keyOne);
-            encryptor.Decrypt(saveEncryption2, saveDecryption2, keyTwo);
-            Assert.IsFalse(encryptor.compareFile(saveEncryption1, saveDecryption2), "test 5");
-            Assert.IsTrue(encryptor.compareFile(fileToEncrypt1, saveDecryption1), "test 6");
-            Assert.IsTrue(encryptor.compareFile(saveDecryption1, saveDecryption2), "test 7");
+            KeyHolder keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
+            KeyHolder keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
+            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
+            checkDifSeed(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
             checkDifSeed(keyOne, keyTwo);
         }
+        #endregion
+        #endregion
+
+        #region Resource Tests
+        [TestMethod()]
+        public void testResourceLocations()
+        {
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedGifOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedGifTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedJpegOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedJpegTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedPdfOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedPdfTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedPngOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedPngTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedTextOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.DecryptedTextTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedGifOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedGifTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedJpegOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedJpegTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedPdfOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedPdfTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedPngOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedPngTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedTextOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.EncryptedTextTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.GifToEncryptOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.GifToEncryptTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.JpegToEncryptOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.JpegToEncryptTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.PdfToEncryptOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.PdfToEncryptTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.PngToEncryptOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.PngToEncryptTwo)));
+            Assert.IsTrue(File.Exists(GetPath(Files.TextToEncryptOne)));
+            Assert.IsTrue(File.Exists(GetPath(Files.TextToEncryptTwo)));
+        }
+        #endregion
+
+        #region Helper Functions
         /// <summary>
         /// asserts that the given class is not null referenced
         /// </summary>
@@ -955,7 +890,7 @@ namespace Networking_Encryption.Tests
         /// </summary>
         /// <param name="keyOne">first pair to check</param>
         /// <param name="keyTwo">second pair to check</param>
-        static void checkSameSeed(KeyHolder keyOne, KeyHolder keyTwo,EncryptionMode Mode = EncryptionMode.Aes)
+        static void checkSameSeed(KeyHolder keyOne, KeyHolder keyTwo)
         {
             checkPairNotNull(keyOne);
             checkPairNotNull(keyTwo);
@@ -967,12 +902,84 @@ namespace Networking_Encryption.Tests
         /// </summary>
         /// <param name="keyOne">first pair to check</param>
         /// <param name="keyTwo">second pair to check</param>
-        static void checkDifSeed(KeyHolder keyOne, KeyHolder keyTwo,EncryptionMode Mode = EncryptionMode.Aes)
+        static void checkDifSeed(KeyHolder keyOne, KeyHolder keyTwo)
         {
             checkPairNotNull(keyOne);
             checkPairNotNull(keyTwo);
             Assert.AreNotEqual(string.Join("", keyOne.Key), string.Join("", keyTwo.Key));
             Assert.AreNotEqual(string.Join("", keyOne.Seed), string.Join("", keyTwo.Seed));
         }
+        /// <summary>
+        /// Function returns the whole path of a file
+        /// </summary>
+        /// <param name="path">//name of file to find whole path</param>
+        /// <returns></returns>
+        static string GetPath(string path)
+        {
+            return Directory.GetParent(path).FullName + path;
+        }
+        /// <summary>
+        /// function tests that the given two files are not the same and have different lengths from each other
+        /// </summary>
+        /// <param name="decryptedFile"> unencrypted file</param>
+        /// <param name="encryptedFile">encryptedFile</param>
+        static void TestEncryptDecryption(string decryptedFile, string encryptedFile)
+        {
+            Assert.IsFalse(Encryption.FileCompare(decryptedFile, encryptedFile), "Decrypted file and Encrypted File are the same");
+            Assert.IsTrue(new FileInfo(encryptedFile).Length > new FileInfo(decryptedFile).Length,"File was not Salted");
+        }
+        /// <summary>
+        ///         /// function tests that the given two files are not the same and have different lengths from each other
+        /// </summary>
+        /// <param name="cipherText">Encrypted Text</param>
+        private static void TestEncryption(string cipherText)
+        {
+            Assert.AreNotEqual(word, cipherText, "Text Did Not Encrypt");
+            Assert.IsTrue(cipherText.Count() > word.Count(), "Data was not Salted");
+        }
+        /// <summary>
+        /// Function test to make sure that the files to encrypt are the same and that the encrypted files are not the same
+        /// </summary>
+        /// <param name="fileToEncrypt1">first file to encrypt</param>
+        /// <param name="saveDestination1">fist encrypted file</param>
+        /// <param name="fileToEncrypt2">second file to encrypt</param>
+        /// <param name="saveDestination2">second encrypted file</param>
+        private static void SameSeedAndDifSeedTestHelper(string fileToEncrypt1, string saveDestination1, string fileToEncrypt2, string saveDestination2)
+        {
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt1, fileToEncrypt2), "Files are not the same");
+            Assert.IsFalse(Encryption.FileCompare(saveDestination1, saveDestination2), "Encrypted Files are the same");
+        }
+        /// <summary>
+        /// function asserts that decrypted texts are the same and that they are different from their encrypted versions
+        /// </summary>
+        /// <param name="encryptedText1">encrypted string one</param>
+        /// <param name="encryptedText2">encrypted string two</param>
+        /// <param name="decryptdTxt1">decrytped string one</param>
+        /// <param name="decryptdTxt2">decrypted string two</param>
+        static void TestStrDecryptionSameSeed(string encryptedText1, string encryptedText2, string decryptdTxt1, string decryptdTxt2)
+        {
+            Assert.AreEqual(word, decryptdTxt1, "Text Not The Same");
+            Assert.AreEqual(decryptdTxt1, decryptdTxt2, "Text Not The Same");
+            Assert.AreNotEqual(encryptedText1, decryptdTxt1, "Text Are The Same");
+            Assert.AreNotEqual(encryptedText2, decryptdTxt1, "Text Are The Same");
+        }
+        /// <summary>
+        /// function asserts that the encrypted files are not the same and that the decrypted files are all the same
+        /// </summary>
+        /// <param name="fileToEncrypt1">file to encrypt one</param>
+        /// <param name="fileToEncrypt2">file to encrypt two</param>
+        /// <param name="encryptedFile1">encrypted file one</param>
+        /// <param name="encryptedFile2">encrypted file two</param>
+        /// <param name="decryptedFile1">decrypted file one</param>
+        /// <param name="decryptedFile2">decrypted file two</param>
+        private static void CheckFileDecryption(string fileToEncrypt1, string fileToEncrypt2, string encryptedFile1, string encryptedFile2, string decryptedFile1, string decryptedFile2)
+        {
+            Assert.IsFalse(Encryption.FileCompare(encryptedFile1, decryptedFile1), "Files are the same");
+            Assert.IsFalse(Encryption.FileCompare(encryptedFile2, decryptedFile2), "Files are the same");
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt1, decryptedFile1), "Files are not the same");
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt2, decryptedFile2), "Files are not the same");
+            Assert.IsTrue(Encryption.FileCompare(decryptedFile1, decryptedFile2), "Files are not the same");
+        }
+        #endregion
     }
 }

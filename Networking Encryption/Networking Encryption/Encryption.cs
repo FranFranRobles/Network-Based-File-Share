@@ -402,7 +402,7 @@ namespace Networking_Encryption
         /// <param name="fileOne">First file to check</param>
         /// <param name="compareFile">File to compare with</param>
         /// <returns>returns true if the </returns>
-        public bool compareFile(string fileOne, string compareFile)
+        static public bool FileCompare(string fileOne, string compareFile)
         {
             bool areEqual = false;
             if (FileExtFuncts.checkExtention(fileOne, compareFile))
@@ -436,7 +436,7 @@ namespace Networking_Encryption
         /// <param name="byteOne">first byte to compare</param>
         /// <param name="compareByte"> second byte to compare with</param>
         /// <returns></returns>
-        private bool checkBits(byte byteOne, byte compareByte)
+        static private bool checkBits(byte byteOne, byte compareByte)
         {
             bool areEqual = false;
             int pos = 0;
@@ -464,7 +464,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="path">name of the file</param>
         /// <returns>data of the file in the form of a byte array</returns>
-        private byte[] readFile(string path)
+        static private byte[] readFile(string path)
         {
             byte[] fileBytes = null;
             using (FileStream fStrm = new FileStream(path, FileMode.Open, FileAccess.Read))
