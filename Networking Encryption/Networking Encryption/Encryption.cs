@@ -228,8 +228,9 @@ namespace Networking_Encryption
         /// <param name="keys">place to store encryption keys and Seed</param>
         /// <param name="seed">user defined seed to run encryption on</param>
         /// <returns>returns an encrypted string ro  the name of the file where the file was encrypted</returns>
-        public string EncryptStr(string str,ref KeyHolder keys, string seed = "")
+        public string EncryptStr(string str,ref KeyHolder keys, string seed = "",string key = "")
         {
+            throw new NotImplementedException();
             if (!FileExtFuncts.checkHasExtention(str))
             {
                 int len = str.Length;
@@ -258,8 +259,9 @@ namespace Networking_Encryption
         /// <param name="SaveLocation"> file to write to</param>
         /// <param name="seed"> seed to run encryption algo</param>
         /// <returns>a pair that holds key seed and type of encryption used</returns>
-        public KeyHolder Encrypt(string readLocation, string SaveLocation, string seed = "")
+        public KeyHolder Encrypt(string readLocation, string SaveLocation, string seed = "", string key = "")
         {
+            throw new NotImplementedException();
             KeyHolder keys = null;
             AesEncryption aes = new AesEncryption();
             if (seed == "")
@@ -354,7 +356,7 @@ namespace Networking_Encryption
         /// <param name="message">message to compress & encrypt</param>
         /// <param name="seed"> value to use as the seed</param>
         /// <returns>an encrypted stirng</returns>
-        public string CompressEncrypt(string message, string seed = null)
+        public string CompressEncrypt(string message, ref KeyHolder keys, string seed = null,string key = "")
         {
             throw new NotImplementedException();
         }
@@ -364,7 +366,7 @@ namespace Networking_Encryption
         /// <param name="inputFile">file to compres and encrypt</param>
         /// <param name="outputFile">file to save to encryption</param>
         /// <param name="seed">value to use as the seed</param>
-        public void CompressEncrypt(string inputFile,string outputFile, string seed = null)
+        public KeyHolder CompressEncrypt(string inputFile,string outputFile, string seed = null, string key = null)
         {
             throw new NotImplementedException();
         }
@@ -420,11 +422,11 @@ namespace Networking_Encryption
         /// <param name="encryptedMsg">msg to decrypt and decompress</param>
         /// <param name="seed"> seed value to use</param>
         /// <returns>returns a decrypted & decompressed string</returns>
-        public string DecompressDecrypt(string encryptedMsg, string seed = null)
+        public string DecompressDecrypt(string encryptedMsg, ref KeyHolder keys)
         {
             throw new NotImplementedException();
         }
-        public void DecompressDecrypt(string inputFile, string outputFile,string seed = null)
+        public void DecompressDecrypt(string inputFile, string outputFile, KeyHolder keys)
         {
             throw new NotImplementedException();
         }

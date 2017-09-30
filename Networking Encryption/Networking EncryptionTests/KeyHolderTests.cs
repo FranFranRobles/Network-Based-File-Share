@@ -13,6 +13,8 @@ namespace Networking_Encryption.Tests
     [TestClass()]
     public class KeyHolderTest
     {
+        const string KEY_HOLDER_CAT = "KeyHolder Tests";
+        const string EXCEPTION_TXT = "Exception";
         #region Test Constants
         const int KeyLen = 32;
         const int SeedLen = 16;
@@ -22,6 +24,8 @@ namespace Networking_Encryption.Tests
 
         #region CTOR Unit Tests
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(KEY_HOLDER_CAT)]
         public void KeyHolderDefaultCTOR()
         {
             KeyHolder test = new KeyHolder();
@@ -29,6 +33,8 @@ namespace Networking_Encryption.Tests
             Assert.IsNull(test.Seed);
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(KEY_HOLDER_CAT)]
         public void KeyHolderByteCTOR()
         {
             byte[] key = Enumerable.Repeat(TestNum, KeyLen).ToArray();
@@ -38,6 +44,8 @@ namespace Networking_Encryption.Tests
             Assert.AreEqual(string.Join("", seed), string.Join("", test.Seed));
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(KEY_HOLDER_CAT)]
         public void KeyHolderStringCTOR()
         {
             string key = string.Join("", Enumerable.Repeat("123", KeyLen).ToArray());
@@ -50,6 +58,8 @@ namespace Networking_Encryption.Tests
 
         #region SetFunctions Unit Tests
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(KEY_HOLDER_CAT)]
         public void setKeyByteTest()
         {
             KeyHolder test = new KeyHolder();
@@ -57,6 +67,9 @@ namespace Networking_Encryption.Tests
             test.setKey(key);
             Assert.AreEqual(string.Join("", key), string.Join("", test.Key));
         }
+        [TestMethod()]
+        [Priority(0)]
+        [TestCategory(KEY_HOLDER_CAT)]
         public void setKeyStringByteTest()
         {
             KeyHolder test = new KeyHolder();
@@ -65,6 +78,8 @@ namespace Networking_Encryption.Tests
             Assert.AreEqual(string.Join("", key), string.Join("", test.Key));
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(KEY_HOLDER_CAT)]
         public void setSeedByteTest()
         {
             KeyHolder test = new KeyHolder();
@@ -72,6 +87,9 @@ namespace Networking_Encryption.Tests
             test.setSeed(seed);
             Assert.AreEqual(string.Join("", seed), string.Join("", test.Seed));
         }
+        [TestMethod()]
+        [Priority(0)]
+        [TestCategory(KEY_HOLDER_CAT)]
         public void setSeedStringTest()
         {
             KeyHolder test = new KeyHolder();
@@ -84,60 +102,100 @@ namespace Networking_Encryption.Tests
         #region Exception is Thrown Unit Tests
 
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(InvalidLengthException))]
         public void setSeedStringInvalidLenExceptionTest()
         {
             KeyHolder test = new KeyHolder();
-            Assert.ThrowsException<InvalidLengthException>(() => test.setSeed(string.Join("", Enumerable.Repeat((byte)155, 10).ToArray())));
+            test.setSeed(string.Join("", Enumerable.Repeat((byte)155, 10).ToArray()));
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(OutOfDomainException))]
         public void setSeedStringOutOfDomainExceptionTest()
         {
             KeyHolder test = new KeyHolder();
-            Assert.ThrowsException<OutOfDomainException>(() => test.setSeed(string.Join("", Enumerable.Repeat(invalidNum, SeedLen).ToArray())));
+            test.setSeed(string.Join("", Enumerable.Repeat(invalidNum, SeedLen).ToArray()));
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(InvalidLengthException))]
         public void setSeedByteInvalidLenExceptionTest()
         {
             KeyHolder test = new KeyHolder();
-            Assert.ThrowsException<InvalidLengthException>(() => test.setSeed(Enumerable.Repeat(TestNum, (SeedLen - 5)).ToArray()));
+            test.setSeed(Enumerable.Repeat(TestNum, (SeedLen - 5)).ToArray());
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(InvalidLengthException))]
         public void setKeyStringInvalidLenExceptionTest()
         {
             KeyHolder test = new KeyHolder();
-            Assert.ThrowsException<InvalidLengthException>(() => test.setKey(string.Join("", Enumerable.Repeat((byte)155, 10).ToArray())));
+            test.setKey(string.Join("", Enumerable.Repeat((byte)155, 10).ToArray()));
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(OutOfDomainException))]
         public void setKeyStringOutOfDomianExceptionTest()
         {
             KeyHolder test = new KeyHolder();
-            Assert.ThrowsException<OutOfDomainException>(() => test.setKey(string.Join("", Enumerable.Repeat(invalidNum, SeedLen).ToArray())));
+            test.setKey(string.Join("", Enumerable.Repeat(invalidNum, SeedLen).ToArray()));
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(InvalidLengthException))]
         public void setKeyByteInvalidLenExceptionTest()
         {
             KeyHolder test = new KeyHolder();
-            Assert.ThrowsException<InvalidLengthException>(() => test.setKey(Enumerable.Repeat(TestNum, (KeyLen - 5)).ToArray()));
+            test.setKey(Enumerable.Repeat(TestNum, (KeyLen - 5)).ToArray());
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(OutOfDomainException))]
         public void parseStrIsKeyOutOfDomainTest()
         {
-            Assert.ThrowsException<OutOfDomainException>(() => KeyHolder.parseString(string.Join("", Enumerable.Repeat(invalidNum, KeyLen).ToArray()), true));
+            KeyHolder.parseString(string.Join("", Enumerable.Repeat(invalidNum, KeyLen).ToArray()), true);
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(InvalidLengthException))]
         public void parseStrIsKeyInvalidLenTest()
         {
-            Assert.ThrowsException<InvalidLengthException>(() => KeyHolder.parseString(string.Join("", Enumerable.Repeat((byte)155, (KeyLen - 3)).ToArray()), true));
+            KeyHolder.parseString(string.Join("", Enumerable.Repeat((byte)155, (KeyLen - 3)).ToArray()), true);
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(OutOfDomainException))]
         public void parseStrNotKeyOutOfDomainTest()
         {
-            Assert.ThrowsException<OutOfDomainException>(() => KeyHolder.parseString(string.Join("", Enumerable.Repeat(invalidNum, SeedLen).ToArray()), false));
+            KeyHolder.parseString(string.Join("", Enumerable.Repeat(invalidNum, SeedLen).ToArray()), false);
         }
         [TestMethod()]
+        [Priority(0)]
+        [TestCategory(EXCEPTION_TXT)]
+        [TestCategory(KEY_HOLDER_CAT)]
+        [ExpectedException(typeof(InvalidLengthException))]
         public void parseStrNotKeyInvalidLenTest()
         {
-            Assert.ThrowsException<InvalidLengthException>(() => KeyHolder.parseString(string.Join("", Enumerable.Repeat((byte)155, (SeedLen - 5)).ToArray()), false));
+            KeyHolder.parseString(string.Join("", Enumerable.Repeat((byte)155, (SeedLen - 5)).ToArray()), false);
         }
         #endregion
     }
