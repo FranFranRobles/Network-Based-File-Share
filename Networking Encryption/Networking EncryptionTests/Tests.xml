@@ -1,0 +1,117 @@
+﻿<tests>
+  <OneFile>
+    <fileToEncrypt>..\\..\\EncryptionTestFiles\\TextToEncryptOne.txt</fileToEncrypt>
+    <encryptedFile>..\\..\\EncryptionTestFiles\\EncryptedTextOne.txt</encryptedFile>
+    <decryptedFile>..\\..\\EncryptionTestFiles\\DecryptedTextOne.txt</decryptedFile>    
+  </OneFile>
+  <OneFile>
+    <fileToEncrypt>..\\..\\EncryptionTestFiles\\PngImageToEncryptOne.png</fileToEncrypt>
+    <encryptedFile>..\\..\\EncryptionTestFiles\\EncryptedPngOne.png</encryptedFile>
+    <decryptedFile>..\\..\\EncryptionTestFiles\\DecryptedPngOne.png</decryptedFile>
+  </OneFile>
+  <OneFile>
+    <fileToEncrypt>..\\..\\EncryptionTestFiles\\PdfToEncryptOne.pdf</fileToEncrypt>
+    <encryptedFile>..\\..\\EncryptionTestFiles\\EncryptedPdfOne.pdf</encryptedFile>
+    <decryptedFile>..\\..\\EncryptionTestFiles\\DecryptedPdfOne.pdf</decryptedFile>
+  </OneFile>
+  <OneFile>
+    <fileToEncrypt>..\\..\\EncryptionTestFiles\\JpegToEncryptOne.jpg</fileToEncrypt>
+    <encryptedFile>..\\..\\EncryptionTestFiles\\EncryptedJpegOne.jpg</encryptedFile>
+    <decryptedFile>..\\..\\EncryptionTestFiles\\DecryptedJpegOne.jpg</decryptedFile>
+  </OneFile>
+  <OneFile>
+    <fileToEncrypt>..\\..\\EncryptionTestFiles\\GifToEncryptOne.gif</fileToEncrypt>
+    <encryptedFile>..\\..\\EncryptionTestFiles\\EncryptedGifOne.gif</encryptedFile>
+    <decryptedFile>..\\..\\EncryptionTestFiles\\DecryptedGifOne.gif</decryptedFile>
+  </OneFile>
+  <TwoFile>
+    <fileToEncryptOne>..\\..\\EncryptionTestFiles\\TextToEncryptOne.txt</fileToEncryptOne>
+    <fileToEncryptTwo>..\\..\\EncryptionTestFiles\\TextToEncryptTwo.txt</fileToEncryptTwo>
+    <encryptedFileOne>..\\..\\EncryptionTestFiles\\EncryptedTextOne.txt</encryptedFileOne>
+    <encryptedFileTwo>..\\..\\EncryptionTestFiles\\EncryptedTextTwo.txt</encryptedFileTwo>
+    <decryptedFileOne>..\\..\\EncryptionTestFiles\\DecryptedTextOne.txt</decryptedFileOne>
+    <decryptedFileTwo>..\\..\\EncryptionTestFiles\\DecryptedTextTwo.txt</decryptedFileTwo>
+  </TwoFile>
+  <TwoFile>
+    <fileToEncryptOne>..\\..\\EncryptionTestFiles\\PngImageToEncryptOne.png</fileToEncryptOne>
+    <fileToEncryptTwo>..\\..\\EncryptionTestFiles\\PngImageToEncryptTwo.png</fileToEncryptTwo>
+    <encryptedFileOne>..\\..\\EncryptionTestFiles\\EncryptedPngOne.png</encryptedFileOne>
+    <encryptedFileTwo>..\\..\\EncryptionTestFiles\\EncryptedPngTwo.png</encryptedFileTwo>
+    <decryptedFileOne>..\\..\\EncryptionTestFiles\\DecryptedPngOne.png</decryptedFileOne>
+    <decryptedFileTwo>..\\..\\EncryptionTestFiles\\DecryptedPngTwo.png</decryptedFileTwo>
+  </TwoFile>
+  <TwoFile>
+    <fileToEncryptOne>..\\..\\EncryptionTestFiles\\PdfToEncryptOne.pdf</fileToEncryptOne>
+    <fileToEncryptTwo>..\\..\\EncryptionTestFiles\\PdfToEncryptTwo.pdf</fileToEncryptTwo>
+    <encryptedFileOne>..\\..\\EncryptionTestFiles\\EncryptedPdfOne.pdf</encryptedFileOne>
+    <encryptedFileTwo>..\\..\\EncryptionTestFiles\\EncryptedPdfTwo.pdf</encryptedFileTwo>
+    <decryptedFileOne>..\\..\\EncryptionTestFiles\\DecryptedPdfOne.pdf</decryptedFileOne>
+    <decryptedFileTwo>..\\..\\EncryptionTestFiles\\DecryptedPdfTwo.pdf</decryptedFileTwo>
+  </TwoFile>
+  <TwoFile>
+    <fileToEncryptOne>..\\..\\EncryptionTestFiles\\JpegToEncryptOne.jpg</fileToEncryptOne>
+    <fileToEncryptTwo>..\\..\\EncryptionTestFiles\\JpegToEncryptTwo.jpg</fileToEncryptTwo>
+    <encryptedFileOne>..\\..\\EncryptionTestFiles\\EncryptedJpegOne.jpg</encryptedFileOne>
+    <encryptedFileTwo>..\\..\\EncryptionTestFiles\\EncryptedJpegTwo.jpg</encryptedFileTwo>
+    <decryptedFileOne>..\\..\\EncryptionTestFiles\\DecryptedJpegOne.jpg</decryptedFileOne>
+    <decryptedFileTwo>..\\..\\EncryptionTestFiles\\DecryptedJpegTwo.jpg</decryptedFileTwo>
+  </TwoFile>
+  <TwoFile>
+    <fileToEncryptOne>..\\..\\EncryptionTestFiles\\GifToEncryptOne.gif</fileToEncryptOne>
+    <fileToEncryptTwo>..\\..\\EncryptionTestFiles\\GifToEncryptTwo.gif</fileToEncryptTwo>
+    <encryptedFileOne>..\\..\\EncryptionTestFiles\\EncryptedGifOne.gif</encryptedFileOne>
+    <encryptedFileTwo>..\\..\\EncryptionTestFiles\\EncryptedGifTwo.gif</encryptedFileTwo>
+    <decryptedFileOne>..\\..\\EncryptionTestFiles\\DecryptedGifOne.gif</decryptedFileOne>
+    <decryptedFileTwo>..\\..\\EncryptionTestFiles\\DecryptedGifTwo.gif</decryptedFileTwo>
+  </TwoFile>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\TextToEncryptOne.txt</file>
+  </Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\PngImageToEncryptOne.png</file>
+  </Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\PdfToEncryptOne.pdf</file>
+  </Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\JpegToEncryptOne.jpg</file>
+  </Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\GifToEncryptOne.gif</file>
+  </Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\EncryptedTextOne.txt</file>
+  </Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\EncryptedPngOne.png</file>
+  </Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\EncryptedPdfOne.pdf</file>
+  </Resource>
+  <OneFile>
+    <file>..\\..\\EncryptionTestFiles\\EncryptedJpegOne.jpg</file>
+  </OneFile>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\EncryptedGifOne.gif</file>
+  
+</Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\DecryptedTextOne.txt</file>
+  
+</Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\DecryptedPngOne.png</file>
+  
+</Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\DecryptedPdfOne.pdf</file>
+  
+</Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\DecryptedJpegOne.jpg</file>
+  
+</Resource>
+  <Resource>
+    <file>..\\..\\EncryptionTestFiles\\DecryptedGifOne.gif</file>
+  </Resource>
+</tests>
