@@ -228,26 +228,42 @@ namespace Networking_Encryption
         /// <param name="keys">place to store encryption keys and Seed</param>
         /// <param name="seed">user defined seed to run encryption on</param>
         /// <returns>returns an encrypted string ro  the name of the file where the file was encrypted</returns>
-        public string EncryptStr(string str,ref KeyHolder keys, string seed = "",string key = "")
+        public string EncryptStr(string str,ref KeyHolder keys, string seed = null,string key = null)
         {
-            throw new NotImplementedException();
             if (!FileExtFuncts.checkHasExtention(str))
             {
                 int len = str.Length;
-                AesEncryption aes = new AesEncryption();
+                AesEncryption Aes = new AesEncryption();
 
-                if (seed == "")
+                if (seed == null && key == null)
                 {
-                    str = aes.Encrypt(str);
+                    str = Aes.Encrypt(str);
                 }
                 else
                 {
-                    keys = SetKey(seed, ref aes);
-                    aes.Seed = keys.Seed;
-                    str = aes.Encrypt(str);
+                    if (seed != null && key == null)
+                    {
+                        keys = SetSeed(seed, ref Aes);
+                        Aes.Seed = keys.Seed;
+                        str = Aes.Encrypt(str);
+                    }
+                    else if (seed == null && key != null)
+                    {
+                        keys = SetKey(key, ref Aes);
+                        Aes.Key = keys.Key;
+                        str = Aes.Encrypt(str);
+                    }
+                    else
+                    {
+                        keys = SetKey(key, ref Aes);
+                        Aes.Key = keys.Key;
+                        keys = SetSeed(seed, ref Aes);
+                        Aes.Seed = keys.Seed;
+                        str = Aes.Encrypt(str);
+                    }
                 }
-                keys = new KeyHolder(aes.Key, aes.Seed);
-                aes.FlushKeys();
+                keys = new KeyHolder(Aes.Key, Aes.Seed);
+                Aes.FlushKeys();
             }
             return str;
         }
@@ -259,35 +275,42 @@ namespace Networking_Encryption
         /// <param name="SaveLocation"> file to write to</param>
         /// <param name="seed"> seed to run encryption algo</param>
         /// <returns>a pair that holds key seed and type of encryption used</returns>
-        public KeyHolder Encrypt(string readLocation, string SaveLocation, string seed = "", string key = "")
+        public KeyHolder Encrypt(string readLocation, string SaveLocation, string seed = null, string key = null)
         {
-            throw new NotImplementedException();
-            KeyHolder keys = null;
+            KeyHolder tempKeys = null;
             AesEncryption aes = new AesEncryption();
-            if (seed == "")
+            using (FileStream inputStream = File.Open(readLocation, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                using (FileStream inputStream = File.Open(readLocation, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (FileStream outputStream = File.Open(SaveLocation, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    using (FileStream outputStream = File.Open(SaveLocation, FileMode.Create, FileAccess.Write, FileShare.None))
+                    if (seed == null && key == null)
                     {
+                        aes.Encrypt(inputStream, outputStream);
+                    }
+                    else if (seed != null && key == null)
+                    {
+                        tempKeys = SetSeed(seed, ref aes);
+                        aes.Seed = tempKeys.Seed;
+                        aes.Encrypt(inputStream, outputStream);
+                    }
+                    else if (seed == null && key != null)
+                    {
+                        tempKeys = SetKey(key, ref aes);
+                        aes.Key = tempKeys.Key;
+                        aes.Encrypt(inputStream, outputStream);
+                    }
+                    else
+                    {
+                        tempKeys = SetKey(key, ref aes);
+                        aes.Key = tempKeys.Key;
+                        tempKeys = SetSeed(seed, ref aes);
+                        aes.Seed = tempKeys.Seed;
                         aes.Encrypt(inputStream, outputStream);
                     }
                 }
             }
-            else
-            {
-                keys = SetKey(seed, ref aes);
-                aes.Seed = keys.Seed;
-                using (FileStream inputStream = File.Open(readLocation, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    using (FileStream outputStream = File.Open(SaveLocation, FileMode.Create, FileAccess.Write, FileShare.None))
-                    {
-                        aes.Encrypt(inputStream, outputStream);
-                    }
-                }
-            }
-            keys = new KeyHolder(aes.Key, aes.Seed);
-            return keys;
+            tempKeys = new KeyHolder(aes.Key, aes.Seed);
+            return tempKeys;
         }
         /// <summary>
         /// function does a try catch on KeyHolder.setSeed 
@@ -296,7 +319,7 @@ namespace Networking_Encryption
         /// <param name="seed">seed to set</param>
         /// <param name="aes"> encryption obj to set encryption if OutOfDomainException is thrown </param>
         /// <returns></returns>
-        private KeyHolder SetKey(string seed,ref AesEncryption aes)
+        private KeyHolder SetSeed(string seed,ref AesEncryption aes)
         {
             KeyHolder keys = new KeyHolder();
             try
@@ -350,15 +373,76 @@ namespace Networking_Encryption
             return keys;
         }
         /// <summary>
+        /// function does a try catch on KeyHolder.setKey 
+        /// <para>Returns a KeyHolder obj with a seed intialized</para>
+        /// </summary>
+        /// <param name="key">key to set</param>
+        /// <param name="aes"> encryption obj to set encryption if OutOfDomainException is thrown </param>
+        /// <returns></returns>
+        private KeyHolder SetKey(string key, ref AesEncryption aes)
+        {
+            KeyHolder keys = new KeyHolder();
+            try
+            {
+                keys.setKey(key);
+            }
+            catch (Exception exception)
+            {
+                if (exception is OutOfDomainException)
+                {
+                    aes.GenKey();
+                }
+                else if (exception is InvalidLengthException)
+                {
+                    int keyLen = key.Length;
+                    if (keyLen == 1)
+                    {
+                        key = "00" + key;
+                        for (int count = 0; count < 5; count++)
+                        {
+                            key += key;
+                        }
+                        keys.setKey(key);
+                    }
+                    else if (keyLen == 2)
+                    {
+                        key = "0" + key;
+                        for (int count = 0; count < 5; count++)
+                        {
+                            key += key;
+                        }
+                        keys.setKey(key);
+                    }
+                    else
+                    {
+                        char[] temp = key.ToCharArray();
+                        key = "";
+                        for (int index = 0; index < temp.Length; index++)
+                        {
+                            key += "00" + temp[index];
+                        }
+                        keys.setKey(key);
+                    }
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return keys;
+        }
+        /// <summary>
         ///  Compresses a given message and encrypts it
         ///  <para>Returns an encrypted string</para>
         /// </summary>
         /// <param name="message">message to compress & encrypt</param>
         /// <param name="seed"> value to use as the seed</param>
         /// <returns>an encrypted stirng</returns>
-        public string CompressEncrypt(string message, ref KeyHolder keys, string seed = null,string key = "")
+        public string CompressEncrypt(string message, ref KeyHolder keys, string seed = null,string key = null)
         {
-            throw new NotImplementedException();
+            HuffmanTree hTree = new HuffmanTree();
+            return  EncryptStr(hTree.Encode(message), ref keys, seed, key);
         }
         /// <summary>
         /// Compresses a file then encrypts it
@@ -368,7 +452,15 @@ namespace Networking_Encryption
         /// <param name="seed">value to use as the seed</param>
         public KeyHolder CompressEncrypt(string inputFile,string outputFile, string seed = null, string key = null)
         {
-            throw new NotImplementedException();
+            using (FileStream inputStream = File.Open(inputFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                using (FileStream outputStream = File.Open(inputFile, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    HuffmanTree hTree = new HuffmanTree();
+                    hTree.Encode(inputStream,outputStream);
+                }
+            }
+            return Encrypt(inputFile, outputFile, seed, key);
         }
         #endregion
 
@@ -422,7 +514,7 @@ namespace Networking_Encryption
         /// <param name="encryptedMsg">msg to decrypt and decompress</param>
         /// <param name="seed"> seed value to use</param>
         /// <returns>returns a decrypted & decompressed string</returns>
-        public string DecompressDecrypt(string encryptedMsg, ref KeyHolder keys)
+        public string DecompressDecrypt(string encryptedMsg, KeyHolder keys)
         {
             throw new NotImplementedException();
         }

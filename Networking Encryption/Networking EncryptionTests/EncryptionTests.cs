@@ -7,9 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Resources;
-using Networking_EncryptionTests.Properties;
 /*
- * CodeMetrics: 61  93  1   12  850
+ * CodeMetrics: 64  83  1   15  546
  */
 namespace Networking_Encryption.Tests
 {
@@ -17,11 +16,6 @@ namespace Networking_Encryption.Tests
     [TestClass()]
     public class EncryptionTests
     {
-        private TestContext testContextInstance;
-        public TestContext TestContext{
-            get { return testContextInstance; }
-            set { testContextInstance = value; }
-        }
         // Test Constants
         const string ENCRYPT_TESTS = "Encryption Tests";
         const string FILE_COMPARE = "File Compare Tests";
@@ -29,8 +23,8 @@ namespace Networking_Encryption.Tests
         const string RESOURCE_TESTS = "Resource Tests";
         //class constants
         const string TEST_MSG = "this is a test";
-        const string KEY_ONE = "A";
-        const string KEY_TWO = "b";
+        const string KEY_ONE = "3";
+        const string KEY_TWO = "4";
         const string SEED_ONE = "1";
         const string SEED_TWO = "2";
 
@@ -39,6 +33,12 @@ namespace Networking_Encryption.Tests
         private KeyHolder keyOne = null;
         private KeyHolder keyTwo = null;
 
+        private TestContext testContextInstance;
+        public TestContext TestContext
+        {
+            get { return testContextInstance; }
+            set { testContextInstance = value; }
+        }
         [TestInitialize]
         public void TestIntialize()
         {
@@ -75,7 +75,7 @@ namespace Networking_Encryption.Tests
         public void FileCompareNotEqual()
         {
             string fileOne = GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
-            string fileTwo = GetPath(TestContext.DataRow["decryptedFile"].ToString());
+            string fileTwo = GetPath(TestContext.DataRow["encryptedFile"].ToString());
             Assert.IsFalse(Encryption.FileCompare(fileOne, fileTwo), "File Compare Funct");
         }
         #endregion
@@ -85,7 +85,7 @@ namespace Networking_Encryption.Tests
         #region Encryption Random Encrpt Tests
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void EncryptStringTest()
+        public void EncryptStrTest()
         {
             string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne);
             checkPairNotNull(keyOne);
@@ -93,24 +93,23 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
+        public void CompressEncryptStr()
+        {
+            string EncryptedText = encryptor.CompressEncrypt(TEST_MSG, ref keyOne);
+            checkPairNotNull(keyOne);
+            TestEncryption(EncryptedText);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "OneFile", DataAccessMethod.Sequential)]
-        public void EncryptTxtFileTest()
+        public void EncryptFileTest()
         {
             string fileToEncrypt = GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
             string encryptedFile = GetPath(TestContext.DataRow["encryptedFile"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt, encryptedFile);
-            TestEncryptDecryption(fileToEncrypt, encryptedFile);
+            TestEncryptDecrypt(fileToEncrypt, encryptedFile);
             checkPairNotNull(keyOne);
-        }
-        [TestMethod()]
-        [TestCategory(ENCRYPT_TESTS)]
-        public void CompressEncryptStr()
-        {
-            keyOne = null;
-            string EncryptedText = encryptor.CompressEncrypt(TEST_MSG, ref keyOne);
-            checkPairNotNull(keyOne);
-            TestEncryption(EncryptedText);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
@@ -121,7 +120,7 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt = GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
             string saveDestination = GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
             keyOne = encryptor.CompressEncrypt(fileToEncrypt, saveDestination);
-            TestEncryptDecryption(fileToEncrypt, saveDestination);
+            TestEncryptDecrypt(fileToEncrypt, saveDestination);
             checkPairNotNull(keyOne);
         }
         #endregion
@@ -129,19 +128,27 @@ namespace Networking_Encryption.Tests
         #region Same Seeds Diff Keys Tests
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void EncryptStringSameSeedTest()
+        public void EncryptStrSameSeedDifKeyTest()
         {
-            string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(TEST_MSG, ref keyTwo, 
-                SEED_ONE, KEY_TWO), "Texts should be different");
+            string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo, SEED_ONE, KEY_TWO);
+            TestStrEncryption(cipherText1, cipherText2);
+            checkSameSeedDifKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        public void CompressEncryptStrSameSeedDifKey()
+        {
+            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_ONE, KEY_TWO);
+            TestStrEncryption(cipherText1, cipherText2);
             checkSameSeedDifKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void EncryptTxtFileSameSeedTest()
+        public void EncryptFileSameSeedDifKey()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -149,27 +156,29 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
         }
         [TestMethod()]
-        [TestCategory(ENCRYPT_TESTS)]
-        public void CompressEncryptStrSameSeed()
-        {
-            string cipherText = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, 
-                SEED_ONE, KEY_ONE), "Texts should be different");
-            checkSameSeedDifKey(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        [TestCategory(ENCRYPT_TESTS)]
         [TestCategory(ENCRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
-            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void CompressEncryptFileSameSeed()
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void EncryptDifFileSameSeedDifKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedDifKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressEncryptDifFileSameSeedDifKey()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -177,9 +186,22 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE);
             keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedDifKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
+        public void CompressEncryptFileSameSeedDifKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
         }
         #endregion
@@ -187,19 +209,27 @@ namespace Networking_Encryption.Tests
         #region Dif Seed Same Key Tests
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void EncryptStringDifSeedSameKeyTest()
+        public void EncryptStrDifSeedSameKeyTest()
         {
-            string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(TEST_MSG, ref keyTwo, 
-                SEED_TWO, KEY_TWO), "Encrypted Texts Are Not Different");
-            checkDifSeed(keyOne, keyTwo);
+            string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo, SEED_TWO, KEY_ONE);
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedSameKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        public void CompressEncryptStrDifSeedSameKey()
+        {
+            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_TWO, KEY_ONE);
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedSameKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void EncryptTxtFileDifSeedSameKeyTest()
+        public void EncryptFileDifSeedSameKeyTest()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -207,20 +237,38 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1,encryptedFile1,fileToEncrypt2,encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryption(fileToEncrypt1,encryptedFile1,fileToEncrypt2,encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void CompressEncryptStrDifSeedSameKey()
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void EncryptDifFileDifSeedSameKeyTest()
         {
-            string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.CompressEncrypt(TEST_MSG, ref keyTwo,
-                SEED_TWO, KEY_ONE), "Encrypted Texts Are Not Different");
-            checkDifSeed(keyOne, keyTwo);
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressEncryptDifFileDifSeedSameKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
@@ -232,31 +280,37 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
         }
         #endregion
 
         #region Different Seed  & Key Tests
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void EncryptStringDifSeedKeyTest()
+        public void EncryptStrDifSeedKeyTest()
         {
-            string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(TEST_MSG, ref keyTwo),
-                "Strings encrypted to the same thing");
-            checkDifSeed(keyOne, keyTwo);
+            string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne);
+            string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo);
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        public void CompressEncryptStrDifSeedKey()
+        {
+            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne);
+            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo);
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void EncryptTxtFileDifSeedKeyTest()
+        public void EncryptFileDifSeedKeyTest()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -264,19 +318,38 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1,encryptedFile1,fileToEncrypt2,encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryption(fileToEncrypt1,encryptedFile1,fileToEncrypt2,encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void CompressEncryptStrDifSeedKey()
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+             "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void EncryptDifFileDifSeedKeyTest()
         {
-            string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.CompressEncrypt(TEST_MSG, ref keyTwo), "Strings encrypted to the same thing");
-            checkDifSeed(keyOne, keyTwo);
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressEncryptDifFileDifSeedKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
@@ -290,29 +363,35 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
             keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
         }
         #endregion
 
         #region Same Seed  & Key Tests
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void EncryptStringSameSeedKeyTest()
+        public void EncryptStrSameSeedKeyTest()
         {
-            string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(TEST_MSG, ref keyTwo, 
-                SEED_ONE, KEY_ONE), "Strings encrypted to the same thing");
+            string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo, SEED_ONE, KEY_ONE);
+            TestStrEncryptionSameSeedKey(cipherText1, cipherText2);
+            checkSameSeedKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        public void CompressEncryptStrSameSeedKey()
+        {
+            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_ONE, KEY_ONE);
+            TestStrEncryptionSameSeedKey(cipherText1, cipherText2);
             checkSameSeedKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void EncryptTxtFileSameSeedKeyTest()
+        public void EncryptFileSameSeedKeyTest()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -320,19 +399,37 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(ENCRYPT_TESTS)]
-        public void CompressEncryptStrSameSeedKey()
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void EncryptDifFileSameSeedKeyTest()
         {
-            string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne);
-            TestEncryption(cipherText);
-            Assert.AreNotEqual(cipherText, encryptor.EncryptStr(TEST_MSG, ref keyTwo,
-                SEED_ONE, KEY_ONE), "Strings encrypted to the same thing");
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedKey(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(ENCRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressEncryptDifFileSameSeedKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
         }
         [TestMethod()]
@@ -347,9 +444,7 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
         }
         #endregion
@@ -360,57 +455,59 @@ namespace Networking_Encryption.Tests
         #region Random Decrypt Tests
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        public void DecryptStringTest()
+        public void DecryptStrTest()
         {
             string cipherText = encryptor.EncryptStr(TEST_MSG, ref keyOne);
+            string decipherdText = encryptor.Decrypt(cipherText, keyOne);
             checkPairNotNull(keyOne);
             TestEncryption(cipherText);
-            Assert.AreEqual(TEST_MSG, encryptor.Decrypt(cipherText, keyOne),
-                "Decrypted text is not the same original text");
+            Assert.AreEqual(TEST_MSG, decipherdText, "Msgs should be equal");
+            Assert.AreNotEqual(cipherText, decipherdText, "Failed To Decrypt Msg");
             checkPairNotNull(keyOne);
         }
-        [TestMethod()]
-        [TestCategory(DECRYPT_TESTS)]
-        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
-            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void DecryptTxtFileTest()
-        {
-            string fileToEncrypt = GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
-            string encryptedFile = GetPath(TestContext.DataRow["encryptedFile"].ToString());
-            string decryptedFile = GetPath(TestContext.DataRow["decryptedFile"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt, encryptedFile);
-            TestEncryptDecryption(fileToEncrypt, encryptedFile);
-            checkPairNotNull(keyOne);
-            encryptor.Decrypt(encryptedFile, decryptedFile, keyOne);
-            TestEncryptDecryption(decryptedFile,encryptedFile);
-            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt, decryptedFile),
-                "Decrypted File Not Same Len As Orginal File");
-        } 
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
         public void CompressDecryptStr()
         {
             string cipherText = encryptor.CompressEncrypt(TEST_MSG, ref keyOne);
+            string decipherdText = encryptor.DecompressDecrypt(cipherText, keyOne);
             checkPairNotNull(keyOne);
             TestEncryption(cipherText);
-            Assert.AreEqual(TEST_MSG, encryptor.DecompressDecrypt(cipherText,ref keyOne),
-                "Decrypted text is not the same original text");
+            Assert.AreEqual(TEST_MSG, decipherdText, "Msgs should be equal");
+            Assert.AreNotEqual(cipherText, decipherdText, "Failed To Decrypt Msg");
             checkPairNotNull(keyOne);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
-            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
+            "|DataDirectory|\\Tests.xml", "OneFile", DataAccessMethod.Sequential)]
+        public void DecryptFileTest()
+        {
+            string fileToEncrypt = GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
+            string encryptedFile = GetPath(TestContext.DataRow["encryptedFile"].ToString());
+            string decryptedFile = GetPath(TestContext.DataRow["decryptedFile"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt, encryptedFile);
+            TestEncryptDecrypt(fileToEncrypt, encryptedFile);
+            checkPairNotNull(keyOne);
+            encryptor.Decrypt(encryptedFile, decryptedFile, keyOne);
+            TestEncryptDecrypt(decryptedFile,encryptedFile);
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt, decryptedFile),
+                "Decrypted File Not Same Len As Orginal File");
+        } 
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "OneFile", DataAccessMethod.Sequential)]
         public void CompressDecryptFile()
         {
             string fileToEncrypt = GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
             string encryptedFile = GetPath(TestContext.DataRow["encryptedFile"].ToString());
             string decryptedFile = GetPath(TestContext.DataRow["decryptedFile"].ToString());
             keyOne = encryptor.CompressEncrypt(fileToEncrypt, encryptedFile);
-            TestEncryptDecryption(fileToEncrypt, encryptedFile);
+            TestEncryptDecrypt(fileToEncrypt, encryptedFile);
             checkPairNotNull(keyOne);
             encryptor.DecompressDecrypt(encryptedFile, decryptedFile, keyOne);
-            TestEncryptDecryption(decryptedFile, encryptedFile);
+            TestEncryptDecrypt(decryptedFile, encryptedFile);
             Assert.IsTrue(Encryption.FileCompare(fileToEncrypt, decryptedFile),
                 "Decrypted File Not Same Len As Orginal File");
         }
@@ -419,56 +516,31 @@ namespace Networking_Encryption.Tests
         #region Same Seed Dif KeysTests
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        public void DecryptStringSameSeedTest()
+        public void DecryptStrSameSeedDifKeyTest()
         {
             string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
             string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo, SEED_ONE, KEY_TWO);
-            TestEncryptionAssert(cipherText1, cipherText2);
+            TestStrEncryption(cipherText1, cipherText2);
             checkSameSeedDifKey(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2,
-                encryptor.Decrypt(cipherText1, keyOne), encryptor.Decrypt(cipherText1, keyOne));
-            checkSameSeedDifKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, keyOne),
+                encryptor.Decrypt(cipherText1, keyOne));
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
-            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void DecryptTxtFileSameSeedTest()
-        {
-            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
-            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
-            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
-            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
-            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkSameSeedDifKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkSameSeedDifKey(keyOne, keyTwo);
-        }
-        [TestMethod()]
-        [TestCategory(DECRYPT_TESTS)]
-        public void CompressDecryptStrSameSeed()
+        public void CompressDecryptStrSameSeedDifKey()
         {
             string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
             string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_ONE, KEY_TWO);
-            TestEncryptionAssert(cipherText1, cipherText2);
+            TestStrEncryption(cipherText1, cipherText2);
             checkSameSeedDifKey(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1,
-                ref keyOne), encryptor.DecompressDecrypt(cipherText1,ref keyOne));
-            checkSameSeedDifKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1, keyOne),
+                encryptor.DecompressDecrypt(cipherText1, keyOne));
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void CompressDecryptFileSameSeed()
+        public void DecryptFileSameSeedDifKey()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -478,35 +550,106 @@ namespace Networking_Encryption.Tests
             string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
             encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
             encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkSameSeedDifKey(keyOne, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, 
+                decryptedFile1, decryptedFile2);
         }
-        #endregion
-
-        #region Dif Seed Tests
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        public void DecryptStringDifSeedTest()
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+    "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void DecryptDifFileSameSeedDifKey()
         {
-            string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
-            string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo, SEED_TWO, KEY_ONE);
-            TestEncryptionAssert(cipherText1, cipherText2);
-            checkDifSeed(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, 
-                keyOne), encryptor.Decrypt(cipherText1, keyOne));
-            checkDifSeed(keyOne, keyTwo);
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedDifKey(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressDecryptDifFileSameSeedDifKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedDifKey(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void DecryptTxtFileDifSeedTest()
+        public void CompressDecryptFileSameSeedDifKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedDifKey(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
+        }
+        #endregion
+
+        #region Dif Seed same key Tests
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        public void DecryptStrDifSeedSameKey()
+        {
+            string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo, SEED_TWO, KEY_ONE);
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedSameKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, 
+                keyOne), encryptor.Decrypt(cipherText1, keyOne));
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        public void CompressDecryptStrDifSeedSameKey()
+        {
+            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_TWO, KEY_ONE);
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedSameKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1,
+                keyOne), encryptor.DecompressDecrypt(cipherText1, keyOne));
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
+        public void DecryptFileDifSeedSameKey()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -516,32 +659,39 @@ namespace Networking_Encryption.Tests
             string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
             encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
             encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
-        } 
-        [TestMethod()]
-        [TestCategory(DECRYPT_TESTS)]
-        public void CompressDecryptStrDifSeed()
-        {
-            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
-            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_TWO, KEY_ONE);
-            TestEncryptionAssert(cipherText1, cipherText2);
-            checkDifSeed(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1,
-                ref keyOne), encryptor.DecompressDecrypt(cipherText1, ref keyOne));
-            checkDifSeed(keyOne, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
-            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void CompressDecryptFileDifSeed()
+    "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void DecryptDifFileDifSeedSameKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressDecryptDifFileDifSeedSameKey()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -551,36 +701,65 @@ namespace Networking_Encryption.Tests
             string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
             keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
             encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
             encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
+        public void CompressDecryptFileDifSeedSameKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedSameKey(keyOne, keyTwo);
+            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
         }
         #endregion
 
         #region Dif Seed & Key tests
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        public void DecryptStringDifSeedKeyTest()
+        public void DecryptStrDifSeedKeyTest()
         {
             string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne);
             string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo);
-            TestEncryption(cipherText1);
-            Assert.AreNotEqual(cipherText1, cipherText2, "Strings encrypted to the same thing");
-            checkDifSeed(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, 
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, 
                 keyOne), encryptor.Decrypt(cipherText1, keyOne));
-            checkDifSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        public void CompressDecryptStrDifSeedKey()
+        {
+            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne);
+            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo);
+            TestStrEncryption(cipherText1, cipherText2);
+            TestDifSeedKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1,
+                keyOne), encryptor.DecompressDecrypt(cipherText1, keyOne));
+            TestDifSeedSameKey(keyOne, keyTwo);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void DecryptTxtFileDifSeedKeyTest()
+        public void DecryptFileDifSeedKeyTest()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -590,27 +769,54 @@ namespace Networking_Encryption.Tests
             string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
             encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
             encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        public void CompressDecryptStrDifSeedKey()
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+    "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void DecryptDifFileDifSeedKeyTest()
         {
-            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne);
-            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo);
-            TestEncryption(cipherText1);
-            Assert.AreNotEqual(cipherText1, cipherText2, "Strings encrypted to the same thing");
-            checkDifSeed(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1,
-                ref keyOne), encryptor.DecompressDecrypt(cipherText1, ref keyOne));
-            checkDifSeed(keyOne, keyTwo);
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressDecryptDifFileDifSeedKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
+            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1,
+                encryptedFile2, decryptedFile1, decryptedFile2);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
@@ -626,36 +832,43 @@ namespace Networking_Encryption.Tests
             string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
             keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
             keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            TestDifSeedKey(keyOne, keyTwo);
             encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
             encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, 
+                encryptedFile2, decryptedFile1, decryptedFile2);
         }
         #endregion
 
         #region Same Seed & Key tests
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        public void DecryptStringSameKeySeedTest()
+        public void DecryptStrSameKeySeedTest()
         {
             string cipherText1 = encryptor.EncryptStr(TEST_MSG, ref keyOne, SEED_ONE,  KEY_ONE);
             string cipherText2 = encryptor.EncryptStr(TEST_MSG, ref keyTwo, SEED_ONE, KEY_ONE);
-            TestEncryptionAssert(cipherText1, cipherText2);
-            Assert.AreNotEqual(cipherText1, cipherText2, "Strings encrypted to the same thing");
-            checkDifSeed(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, 
+            TestStrEncryptionSameSeedKey(cipherText1, cipherText2);
+            checkSameSeedKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.Decrypt(cipherText1, 
                 keyOne), encryptor.Decrypt(cipherText1, keyOne));
-            checkDifSeed(keyOne, keyTwo);
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        public void CompressDecryptStrSameSeedKey()
+        {
+            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
+            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_ONE, KEY_ONE);
+            TestStrEncryptionSameSeedKey(cipherText1, cipherText2);
+            checkSameSeedKey(keyOne, keyTwo);
+            TestStrDecryption(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1,
+                keyOne), encryptor.CompressEncrypt(cipherText1, ref keyOne));
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
             "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
-        public void DecryptTxtFileSameKeySeedTest()
+        public void DecryptFileSameKeySeedTest()
         {
             string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
             string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
@@ -665,26 +878,54 @@ namespace Networking_Encryption.Tests
             string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
             keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
             keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedKey(keyOne, keyTwo);
             encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
             encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
-        public void CompressDecryptStrSameSeedKey()
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void DecryptDifFileSameKeySeedTest()
         {
-            string cipherText1 = encryptor.CompressEncrypt(TEST_MSG, ref keyOne, SEED_ONE, KEY_ONE);
-            string cipherText2 = encryptor.CompressEncrypt(TEST_MSG, ref keyTwo, SEED_ONE, KEY_ONE);
-            TestEncryptionAssert(cipherText1, cipherText2);
-            Assert.AreNotEqual(cipherText1, cipherText2, "Strings encrypted to the same thing");
-            checkDifSeed(keyOne, keyTwo);
-            TestStrDecryptionSameSeed(cipherText1, cipherText2, encryptor.DecompressDecrypt(cipherText1,ref keyOne), encryptor.CompressEncrypt(cipherText1,ref keyOne));
-            checkDifSeed(keyOne, keyTwo);
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedKey(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
+        }
+        [TestMethod()]
+        [TestCategory(DECRYPT_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void CompressDecryptDifFileSameSeedKey()
+        {
+            string fileToEncrypt1 = GetPath(TestContext.DataRow["fileToEncryptOne"].ToString());
+            string fileToEncrypt2 = GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
+            string encryptedFile1 = GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
+            string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
+            string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
+            string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
+            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedKey(keyOne, keyTwo);
+            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
         }
         [TestMethod()]
         [TestCategory(DECRYPT_TESTS)]
@@ -698,16 +939,14 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
-            TestEncryptDecryption(fileToEncrypt1, encryptedFile1);
-            TestEncryptDecryption(fileToEncrypt2, encryptedFile2);
-            SameSeedAndDifSeedTestHelper(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
-            CheckFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, decryptedFile1, decryptedFile2);
-            checkDifSeed(keyOne, keyTwo);
+            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
+            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
+            checkSameSeedKey(keyOne, keyTwo);
+            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
+            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
+                decryptedFile1, decryptedFile2);
         }
         #endregion
         #endregion
@@ -719,7 +958,43 @@ namespace Networking_Encryption.Tests
             "|DataDirectory|\\Tests.xml", "Resource", DataAccessMethod.Sequential)]
         public void testResourceLocations()
         {
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["file"].ToString())));
+        }
+        [TestMethod()]
+        [TestCategory(RESOURCE_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+           "|DataDirectory|\\Tests.xml", "OneFile", DataAccessMethod.Sequential)]
+        public void testResourceParseOneFile()
+        {
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["fileToEncrypt"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["encryptedFile"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["decryptedFile"].ToString())));
+        }
+        [TestMethod()]
+        [TestCategory(RESOURCE_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "TwoFile", DataAccessMethod.Sequential)]
+        public void testResourceParseTwoFile()
+        {
             Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["fileToEncryptOne"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["encryptedFileOne"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["decryptedFileOne"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["encryptedFileTwo"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["decryptedFileTwo"].ToString())));
+        }
+        [TestMethod()]
+        [TestCategory(RESOURCE_TESTS)]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML",
+            "|DataDirectory|\\Tests.xml", "MixFile", DataAccessMethod.Sequential)]
+        public void testResourceParseMixFile()
+        {
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["fileToEncryptOne"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["encryptedFileOne"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["decryptedFileOne"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["encryptedFileTwo"].ToString())));
+            Assert.IsTrue(File.Exists(GetPath(TestContext.DataRow["decryptedFileTwo"].ToString())));
         }
         #endregion
 
@@ -751,12 +1026,24 @@ namespace Networking_Encryption.Tests
         /// </summary>
         /// <param name="keyOne">first pair to check</param>
         /// <param name="keyTwo">second pair to check</param>
-        static void checkDifSeed(KeyHolder keyOne, KeyHolder keyTwo)
+        static void TestDifSeedSameKey(KeyHolder keyOne, KeyHolder keyTwo)
         {
             checkPairNotNull(keyOne);
             checkPairNotNull(keyTwo);
             Assert.AreEqual(string.Join("", keyOne.Key), string.Join("", keyTwo.Key)," keys are different from eachther");
             Assert.AreNotEqual(string.Join("", keyOne.Seed), string.Join("", keyTwo.Seed),"seeds should be different from eachother");
+        }
+        /// <summary>
+        /// function tests whether the given two keys and seeds are equal to each other
+        /// </summary>
+        /// <param name="keyOne">key one to check</param>
+        /// <param name="keyTwo">key two to check</param>
+        static void TestDifSeedKey(KeyHolder keyOne, KeyHolder keyTwo)
+        {
+            checkPairNotNull(keyOne);
+            checkPairNotNull(keyTwo);
+            Assert.AreNotEqual(string.Join("", keyOne.Key), string.Join("", keyTwo.Key), " keys are different from eachther");
+            Assert.AreNotEqual(string.Join("", keyOne.Seed), string.Join("", keyTwo.Seed), "seeds should be different from eachother");
         }
         /// <summary>
         /// checks if the given two keys are eqaul to eachother
@@ -784,9 +1071,9 @@ namespace Networking_Encryption.Tests
         /// </summary>
         /// <param name="decryptedFile"> unencrypted file</param>
         /// <param name="encryptedFile">encryptedFile</param>
-        static void TestEncryptDecryption(string decryptedFile, string encryptedFile)
+        static void TestEncryptDecrypt(string decryptedFile, string encryptedFile)
         {
-            Assert.IsFalse(Encryption.FileCompare(decryptedFile, encryptedFile), "Decrypted file and Encrypted File are the same");
+            Assert.IsFalse(Encryption.FileCompare(decryptedFile, encryptedFile), "Files did not convert");
             Assert.IsTrue(new FileInfo(encryptedFile).Length > new FileInfo(decryptedFile).Length,"File was not Salted");
         }
         /// <summary>
@@ -802,13 +1089,43 @@ namespace Networking_Encryption.Tests
         /// Function test to make sure that the files to encrypt are the same and that the encrypted files are not the same
         /// </summary>
         /// <param name="fileToEncrypt1">first file to encrypt</param>
-        /// <param name="saveDestination1">fist encrypted file</param>
+        /// <param name="encryptedFile1">fist encrypted file</param>
         /// <param name="fileToEncrypt2">second file to encrypt</param>
-        /// <param name="saveDestination2">second encrypted file</param>
-        private static void SameSeedAndDifSeedTestHelper(string fileToEncrypt1, string saveDestination1, string fileToEncrypt2, string saveDestination2)
+        /// <param name="encryptedFile2">second encrypted file</param>
+        private static void TestFileEncryption(string fileToEncrypt1, string encryptedFile1, string fileToEncrypt2, string encryptedFile2)
         {
+            TestEncryptDecrypt(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecrypt(fileToEncrypt2, encryptedFile2);
             Assert.IsTrue(Encryption.FileCompare(fileToEncrypt1, fileToEncrypt2), "Files are not the same");
-            Assert.IsFalse(Encryption.FileCompare(saveDestination1, saveDestination2), "Encrypted Files are the same");
+            Assert.IsFalse(Encryption.FileCompare(encryptedFile1, encryptedFile2), "Encrypted Files are the same");
+        }
+        /// <summary>
+        ///  Tests whether the same two files where encrypted the same
+        /// </summary>
+        /// <param name="fileToEncrypt1">file to be encrypted one</param>
+        /// <param name="encryptedFile1">first encrypted file</param>
+        /// <param name="fileToEncrypt2">file to be encrypted two</param>
+        /// <param name="encryptedFile2">second encrypted file</param>
+        private static void TestFileEncryptionSameSeedKey(string fileToEncrypt1, string encryptedFile1, string fileToEncrypt2, string encryptedFile2)
+        {
+            TestEncryptDecrypt(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecrypt(fileToEncrypt2, encryptedFile2);
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt1, fileToEncrypt2), "Files are not the same");
+            Assert.IsTrue(Encryption.FileCompare(encryptedFile1, encryptedFile2), "Encrypted Files are not the same");
+        }
+        /// <summary>
+        /// Tests the encryption of two files of different types
+        /// </summary>
+        /// <param name="fileToEncrypt1">file one to check</param>
+        /// <param name="encryptedFile1">encrypted file one to check</param>
+        /// <param name="fileToEncrypt2">file two to check</param>
+        /// <param name="encryptedFile2">encrypted file two to check</param>
+        private static void TestFileEncryptionDifFileTypes(string fileToEncrypt1, string encryptedFile1, string fileToEncrypt2, string encryptedFile2)
+        {
+            TestEncryptDecrypt(fileToEncrypt1, encryptedFile1);
+            TestEncryptDecrypt(fileToEncrypt2, encryptedFile2);
+            Assert.IsFalse(Encryption.FileCompare(fileToEncrypt1, fileToEncrypt2), "Files are the same");
+            Assert.IsFalse(Encryption.FileCompare(encryptedFile1, encryptedFile2), "Encrypted Files are the same");
         }
         /// <summary>
         /// function asserts that decrypted texts are the same and that they are different from their encrypted versions
@@ -817,7 +1134,7 @@ namespace Networking_Encryption.Tests
         /// <param name="encryptedText2">encrypted string two</param>
         /// <param name="decryptdTxt1">decrytped string one</param>
         /// <param name="decryptdTxt2">decrypted string two</param>
-        static void TestStrDecryptionSameSeed(string encryptedText1, string encryptedText2, string decryptdTxt1, string decryptdTxt2)
+        static void TestStrDecryption(string encryptedText1, string encryptedText2, string decryptdTxt1, string decryptdTxt2)
         {
             Assert.AreEqual(TEST_MSG, decryptdTxt1, "Text Not The Same");
             Assert.AreEqual(decryptdTxt1, decryptdTxt2, "Text Not The Same");
@@ -833,7 +1150,7 @@ namespace Networking_Encryption.Tests
         /// <param name="encryptedFile2">encrypted file two</param>
         /// <param name="decryptedFile1">decrypted file one</param>
         /// <param name="decryptedFile2">decrypted file two</param>
-        private static void CheckFileDecryption(string fileToEncrypt1, string fileToEncrypt2, string encryptedFile1, string encryptedFile2, string decryptedFile1, string decryptedFile2)
+        private static void TestFileDecryption(string fileToEncrypt1, string fileToEncrypt2, string encryptedFile1, string encryptedFile2, string decryptedFile1, string decryptedFile2)
         {
             Assert.IsFalse(Encryption.FileCompare(encryptedFile1, decryptedFile1), "Files are the same");
             Assert.IsFalse(Encryption.FileCompare(encryptedFile2, decryptedFile2), "Files are the same");
@@ -842,15 +1159,44 @@ namespace Networking_Encryption.Tests
             Assert.IsTrue(Encryption.FileCompare(decryptedFile1, decryptedFile2), "Files are not the same");
         }
         /// <summary>
-        /// function tests whether two strings are equal
+        /// Tests whether two files with different extensions encrypt and decrypt properly
         /// </summary>
-        /// <param name="cipherText1">string to check</param>
-        /// <param name="cipherText2"> second string to check</param>
-        private static void TestEncryptionAssert(string cipherText1, string cipherText2)
+        /// <param name="fileToEncrypt1">file to encrypt one</param>
+        /// <param name="fileToEncrypt2">file to encrypt two</param>
+        /// <param name="encryptedFile1">encrypted file one</param>
+        /// <param name="encryptedFile2">encrypted file two</param>
+        /// <param name="decryptedFile1">decrypted file one</param>
+        /// <param name="decryptedFile2">decrypted file two</param>
+        private static void TestFileDecryptionDifFiles(string fileToEncrypt1, string fileToEncrypt2, string encryptedFile1, string encryptedFile2, string decryptedFile1, string decryptedFile2)
+        {
+            Assert.IsFalse(Encryption.FileCompare(encryptedFile1, decryptedFile1), "Files are the same");
+            Assert.IsFalse(Encryption.FileCompare(encryptedFile2, decryptedFile2), "Files are the same");
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt1, decryptedFile1), "Files are not the same");
+            Assert.IsTrue(Encryption.FileCompare(fileToEncrypt2, decryptedFile2), "Files are not the same");
+            Assert.IsFalse(Encryption.FileCompare(decryptedFile1, decryptedFile2), "Files are the same");
+        }
+        /// <summary>
+        /// function asserts given strings encrypted and that they did not
+        /// encrypt to the same thing
+        /// </summary>
+        /// <param name="cipherText1">encrypted Msg One</param>
+        /// <param name="cipherText2">encrypted Msg Two</param>
+        private static void TestStrEncryption(string cipherText1, string cipherText2)
         {
             TestEncryption(cipherText1);
             TestEncryption(cipherText2);
-            Assert.AreNotEqual(cipherText1, cipherText2, "Msgs should not be equal");
+            Assert.AreNotEqual(cipherText1, cipherText2, "Msgs should be different");
+        }
+        /// <summary>
+        /// tests whether the two strings where encrypted the sameway
+        /// </summary>
+        /// <param name="cipherText1"></param>
+        /// <param name="cipherText2"></param>
+        private static void TestStrEncryptionSameSeedKey(string cipherText1, string cipherText2)
+        {
+            TestEncryption(cipherText1);
+            TestEncryption(cipherText2);
+            Assert.AreEqual(cipherText1, cipherText2, "Msgs should be different");
         }
         #endregion
     }
