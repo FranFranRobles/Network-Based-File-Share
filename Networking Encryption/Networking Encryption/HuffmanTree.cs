@@ -34,6 +34,18 @@ namespace Networking_Encryption
         private byte[] EncodedData = null;
         private bool isNull = true;
 
+        #region CTORS
+        /// <summary>
+        /// Default CTOR
+        /// </summary>
+        public HuffmanTree()
+        {
+            root = null;
+            EncodedData = null;
+            isNull = true;
+        }
+        #endregion
+
         #region Get Functions
         /// <summary>
         /// Is true if Tree is completely empty else false
@@ -59,7 +71,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="inputFile"> file to compress</param>
         /// <param name="outputFile">place to save compression</param>
-        public void Encode(FileStream inputFile, FileStream outputFile)
+        public void Encode(string inputFile, string outputFile)
         {
             throw new NotImplementedException();
         }
@@ -79,7 +91,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="inputFile">file to decompress</param>
         /// <param name="outputFile">save location fo decompressed file</param>
-        public void Decode(FileStream inputFile, FileStream outputFile)
+        public void Decode(string inputFile, string outputFile)
         {
             throw new NotImplementedException();
         }

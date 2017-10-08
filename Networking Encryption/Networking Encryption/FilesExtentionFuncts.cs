@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,7 +10,7 @@ namespace Networking_Encryption
     /// <summary>
     /// provides manipulation to file Extentions
     /// </summary>
-    public class FileExtFuncts
+    public class CheckFile
     {
         /// <summary>
         /// function compares the file extentions of two files
@@ -84,44 +85,98 @@ namespace Networking_Encryption
             return hasExtention;
         }
         /// <summary>
-        /// function remove \ & . from the begining of the file
-        /// <para>returns the file name without . or \ in the begining of the name</para>
+        /// Function returns the whole path of a file
         /// </summary>
-        /// <param name="File">file to prepend</param>
-        /// <returns>a file name</returns>
-        public static string prependFile(string File)
+        /// <param name="path">//name of file to find whole path</param>
+        /// <returns></returns>
+        public static string GetPath(string path)
         {
-            int index = 0;
-            char atIndex = new char();
-            do
+            return Directory.GetParent(path).FullName + path;
+        }
+        #region File Compare Functions
+        /// <summary>
+        /// function compares two files to check whether they are the same
+        /// <para>Returns true if the files are the same</para>
+        /// </summary>
+        /// <param name="fileOne">First file to check</param>
+        /// <param name="compareFile">File to compare with</param>
+        /// <returns>returns true if the </returns>
+        static public bool CompareFile(string fileOne, string compareFile)
+        {
+            bool areEqual = false;
+            if (CheckFile.checkExtention(fileOne, compareFile))
             {
-                atIndex = File[index];
-                index++;
-            } while (index < File.Length && atIndex == '.' || atIndex == '\\');
-            return File.Substring(index - 1);
+                var fileOneBytes = readFile(fileOne);
+                var fileTwoBytes = readFile(compareFile);
+                if (fileOneBytes.Length == fileTwoBytes.Length)
+                {
+                    int pos = 0;
+                    if (fileOneBytes.Length == fileTwoBytes.Length)
+                    {
+                        bool equal = true;
+                        while (pos < fileOneBytes.Length && fileTwoBytes[pos] == fileTwoBytes[pos] && equal == true)
+                        {
+                            equal = checkBits(fileOneBytes[pos], fileTwoBytes[pos]);
+                            pos++;
+                        }
+                        if (pos == fileOneBytes.Length && pos == fileTwoBytes.Length)
+                        {
+                            areEqual = true;
+                        }
+                    }
+                }
+            }
+            return areEqual;
         }
         /// <summary>
-        /// the function removes all paths infront of file name
-        /// <para> returns a file name</para>
+        /// function checks whether all of the bits in a byte are the same 
+        /// <para>Returns true all the bits are the same</para>
         /// </summary>
-        /// <param name="File">file to remove paths from</param>
-        /// <returns>a file name</returns>
-        public static string removePaths(string file)
+        /// <param name="byteOne">first byte to compare</param>
+        /// <param name="compareByte"> second byte to compare with</param>
+        /// <returns></returns>
+        static private bool checkBits(byte byteOne, byte compareByte)
         {
-            file = prependFile(file);
-            while (file.Contains('\\'))
+            bool areEqual = false;
+            int pos = 0;
+            string byteOneBits = "";
+            string byteTwoBits = "";
+            int temp = 0;
+            while (pos < 8)
             {
-                int index = 0;
-                char atIndex = new char();
-                do
-                {
-                    atIndex = file[index];
-                    index++;
-                } while (index < file.Length && atIndex != '\\');
-                index ++;
-                file = file.Substring(index - 1);
+                temp = (byteOne >> pos) & 0x1;
+                byteOneBits += temp == 1 ? temp.ToString() : "0";
+                temp = (compareByte >> pos) & 0x1;
+                byteTwoBits += temp == 1 ? temp.ToString() : "0";
+                pos++;
             }
-            return file;
+            if (byteOneBits == byteTwoBits)
+            {
+                areEqual = true;
+            }
+
+            return areEqual;
         }
+        /// <summary>
+        /// reads in a given file
+        /// <para>returns data inside the file as a byte array</para>
+        /// </summary>
+        /// <param name="path">name of the file</param>
+        /// <returns>data of the file in the form of a byte array</returns>
+        static private byte[] readFile(string path)
+        {
+            byte[] fileBytes = null;
+            using (FileStream fStrm = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                int len = 0;
+                using (BinaryReader binReader = new BinaryReader(fStrm))
+                {
+                    len = Convert.ToInt32(binReader.BaseStream.Length);
+                    fileBytes = binReader.ReadBytes(len);
+                }
+            }
+            return fileBytes;
+        }
+        #endregion
     }
 }

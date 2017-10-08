@@ -62,7 +62,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="EncryptionTests.cs" />
-    <Compile Include="FileExtentionFunctsTests.cs" />
+    <Compile Include="CheckFileTests.cs" />
     <Compile Include="HuffmanTreeTests.cs" />
     <Compile Include="KeyHolderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,7 +74,9 @@
     <None Include="EncryptionTestFiles\EncryptedPdfTwo.pdf" />
     <None Include="EncryptionTestFiles\PdFToEncryptOne.pdf" />
     <None Include="EncryptionTestFiles\PdFToEncryptTwo.pdf" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Networking Encryption\Networking Encryption.csproj">
@@ -83,6 +85,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="checkFileData.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="EncryptionTestFiles\DecryptedGifOne.gif" />
     <Content Include="EncryptionTestFiles\DecryptedGifTwo.gif" />
     <Content Include="EncryptionTestFiles\DecryptedJpegOne.jpg" />
@@ -107,8 +112,12 @@
     <Content Include="EncryptionTestFiles\PngImageToEncryptTwo.png" />
     <Content Include="EncryptionTestFiles\TextToEncryptOne.txt" />
     <Content Include="EncryptionTestFiles\TextToEncryptTwo.txt" />
+    <Content Include="Huffman.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Tests.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <Choose>

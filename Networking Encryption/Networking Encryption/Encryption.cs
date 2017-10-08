@@ -230,7 +230,7 @@ namespace Networking_Encryption
         /// <returns>returns an encrypted string ro  the name of the file where the file was encrypted</returns>
         public string EncryptStr(string str,ref KeyHolder keys, string seed = null,string key = null)
         {
-            if (!FileExtFuncts.checkHasExtention(str))
+            if (!CheckFile.checkHasExtention(str))
             {
                 int len = str.Length;
                 AesEncryption Aes = new AesEncryption();
@@ -452,14 +452,12 @@ namespace Networking_Encryption
         /// <param name="seed">value to use as the seed</param>
         public KeyHolder CompressEncrypt(string inputFile,string outputFile, string seed = null, string key = null)
         {
-            using (FileStream inputStream = File.Open(inputFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                using (FileStream outputStream = File.Open(inputFile, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    HuffmanTree hTree = new HuffmanTree();
-                    hTree.Encode(inputStream,outputStream);
-                }
-            }
+            // run the encryption algo twice / 3 times to create a more psuedo random
+            //  encryption so that the look up table  is not found 
+            // it would remove the psuedo randomness of the encryption.
+            throw new NotImplementedException("read comment on beging of the function");
+            HuffmanTree hTree = new HuffmanTree();
+            hTree.Encode(inputFile, outputFile);
             return Encrypt(inputFile, outputFile, seed, key);
         }
         #endregion
@@ -475,7 +473,7 @@ namespace Networking_Encryption
         public string Decrypt(string encryptedString,KeyHolder keys)
         {
             string decryptedObj = "";
-            if (!FileExtFuncts.checkHasExtention(encryptedString))
+            if (!CheckFile.checkHasExtention(encryptedString))
             {
                 AesEncryption aes = new AesEncryption();
                 aes.Key = keys.Key;
@@ -524,90 +522,5 @@ namespace Networking_Encryption
         }
         #endregion
 
-        #region File Compare Functions
-        /// <summary>
-        /// function compares two files to check whether they are the same
-        /// <para>Returns true if the files are the same</para>
-        /// </summary>
-        /// <param name="fileOne">First file to check</param>
-        /// <param name="compareFile">File to compare with</param>
-        /// <returns>returns true if the </returns>
-        static public bool FileCompare(string fileOne, string compareFile)
-        {
-            bool areEqual = false;
-            if (FileExtFuncts.checkExtention(fileOne, compareFile))
-            {
-                var fileOneBytes = readFile(fileOne);
-                var fileTwoBytes = readFile(compareFile);
-                if (fileOneBytes.Length == fileTwoBytes.Length)
-                {
-                    int pos = 0;
-                    if (fileOneBytes.Length == fileTwoBytes.Length)
-                    {
-                        bool equal = true;
-                        while (pos < fileOneBytes.Length && fileTwoBytes[pos] == fileTwoBytes[pos] && equal == true)
-                        {
-                            equal = checkBits(fileOneBytes[pos], fileTwoBytes[pos]);
-                            pos++;
-                        }
-                        if (pos == fileOneBytes.Length && pos == fileTwoBytes.Length)
-                        {
-                            areEqual = true;
-                        }
-                    }
-                }
-            }
-            return areEqual;
-        }
-        /// <summary>
-        /// function checks whether all of the bits in a byte are the same 
-        /// <para>Returns true all the bits are the same</para>
-        /// </summary>
-        /// <param name="byteOne">first byte to compare</param>
-        /// <param name="compareByte"> second byte to compare with</param>
-        /// <returns></returns>
-        static private bool checkBits(byte byteOne, byte compareByte)
-        {
-            bool areEqual = false;
-            int pos = 0;
-            string byteOneBits = "";
-            string byteTwoBits = "";
-            int temp = 0;
-            while (pos < 8)
-            {
-                temp = (byteOne >> pos) & 0x1;
-                byteOneBits += temp == 1 ? temp.ToString() : "0";
-                temp = (compareByte >> pos) & 0x1;
-                byteTwoBits += temp == 1 ? temp.ToString() : "0";
-                pos++;
-            }
-            if (byteOneBits == byteTwoBits)
-            {
-                areEqual = true;
-            }
-
-            return areEqual;
-        }
-        /// <summary>
-        /// reads in a given file
-        /// <para>returns data inside the file as a byte array</para>
-        /// </summary>
-        /// <param name="path">name of the file</param>
-        /// <returns>data of the file in the form of a byte array</returns>
-        static private byte[] readFile(string path)
-        {
-            byte[] fileBytes = null;
-            using (FileStream fStrm = new FileStream(path, FileMode.Open, FileAccess.Read))
-            {
-                int len = 0;
-                using (BinaryReader binReader = new BinaryReader(fStrm))
-                {
-                    len = Convert.ToInt32(binReader.BaseStream.Length);
-                    fileBytes = binReader.ReadBytes(len);
-                }
-            }
-            return fileBytes;
-        }
-        #endregion
     }
 }
