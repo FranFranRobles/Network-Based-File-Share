@@ -62,7 +62,8 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, FILE, RESOUCE_NODE, DataAccessMethod.Sequential)]
         public void getExtentionHasExtentionTest()
         {
-            Assert.AreEqual("type", CheckFile.getExtention(TestContext.DataRow[RESOURCE_FILE].ToString()));
+            Assert.AreEqual(TestContext.DataRow["type"].ToString(),
+                CheckFile.getExtention(TestContext.DataRow[RESOURCE_FILE].ToString()));
         }
         [TestMethod()]
         [TestCategory(EXCEPTION_CAT)]
@@ -86,7 +87,7 @@ namespace Networking_Encryption.Tests
             Assert.IsFalse(CheckFile.checkHasExtention("this is a test"));
         }
         [TestMethod()]
-        [TestCategory(RESOUCE_NODE + "Tests")]
+        [TestCategory(RESOUCE_NODE + " Tests")]
         [DataSource(PROVIDER_TYPE, FILE, RESOUCE_NODE, DataAccessMethod.Sequential)]
         public void testResourceLocations()
         {
@@ -94,7 +95,7 @@ namespace Networking_Encryption.Tests
             Assert.AreNotEqual("", TestContext.DataRow["type"].ToString());
         }
         [TestMethod()]
-        [TestCategory(RESOUCE_NODE + "Tests")]
+        [TestCategory(RESOUCE_NODE + " Tests")]
         [DataSource(PROVIDER_TYPE, FILE, SAME_EXT, DataAccessMethod.Sequential)]
         public void testResourceSameExtResource()
         {
@@ -102,7 +103,7 @@ namespace Networking_Encryption.Tests
             Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[COMPARE_FILE].ToString())));
         }
         [TestMethod()]
-        [TestCategory(RESOUCE_NODE + "Tests")]
+        [TestCategory(RESOUCE_NODE + " Tests")]
         [DataSource(PROVIDER_TYPE, FILE, DIF_EXT, DataAccessMethod.Sequential)]
         public void testResourceParseOneFile()
         {
@@ -113,7 +114,8 @@ namespace Networking_Encryption.Tests
         [TestCategory(CHECK_FILE_CAT)]
         public void GetPathTestPass()
         {
-            Assert.Fail();
+            string path = "checkFileData.xml";
+            Assert.AreEqual(Directory.GetParent(path).FullName + path, CheckFile.GetPath(path));
         }
         [TestMethod()]
         [TestCategory(EXCEPTION_CAT)]
@@ -121,34 +123,46 @@ namespace Networking_Encryption.Tests
         [ExpectedException(typeof(FormatException))]
         public void GetPathExceptionThrown()
         {
-            Assert.Fail();
+            CheckFile.GetPath("This is a test");
         }
         #region FileCompare Tests
         [TestMethod()]
         [TestCategory(FILE_COMPARE)]
         [TestCategory(CHECK_FILE_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, SAME_EXT, DataAccessMethod.Sequential)]
-        public void FileCompareAreEqual()
+        public void FileCompareSameExtAreEqual()
         {
-            string fileOne = CheckFile.GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
-            string fileTwo = CheckFile.GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
+            string fileOne = CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPARE_ONE].ToString());
+            string fileTwo = CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPARE_ONE].ToString());
             Assert.IsTrue(CheckFile.CompareFile(@fileOne, @fileTwo), "File Compare Funct");
         }
         [TestMethod()]
+        [TestCategory(FILE_COMPARE)]
+        [TestCategory(CHECK_FILE_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, SAME_EXT, DataAccessMethod.Sequential)]
+        public void FileCompareSameExtNotEqual()
+        {
+            string fileOne = CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPARE_ONE].ToString());
+            string fileTwo = CheckFile.GetPath(TestContext.DataRow[COMPARE_FILE].ToString());
+            Assert.IsFalse(CheckFile.CompareFile(fileOne, fileTwo), "File Compare Funct");
+        }
+        [TestMethod()]
+        [TestCategory(FILE_COMPARE)]
+        [TestCategory(CHECK_FILE_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, RESOUCE_NODE, DataAccessMethod.Sequential)]
         public void FileCompareSameFile()
         {
-            string fileOne = CheckFile.GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
+            string fileOne = CheckFile.GetPath(TestContext.DataRow[RESOURCE_FILE].ToString());
             Assert.IsTrue(CheckFile.CompareFile(fileOne, fileOne), "File Compare Funct");
         }
         [TestMethod()]
         [TestCategory(FILE_COMPARE)]
         [TestCategory(CHECK_FILE_CAT)]
-        [DataSource(PROVIDER_TYPE,FILE, SAME_EXT, DataAccessMethod.Sequential)]
-        public void FileCompareNotEqual()
+        [DataSource(PROVIDER_TYPE,FILE, DIF_EXT, DataAccessMethod.Sequential)]
+        public void FileCompareDifExt()
         {
-            string fileOne = CheckFile.GetPath(TestContext.DataRow["fileToEncrypt"].ToString());
-            string fileTwo = CheckFile.GetPath(TestContext.DataRow["encryptedFile"].ToString());
+            string fileOne = CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPARE_ONE].ToString());
+            string fileTwo = CheckFile.GetPath(TestContext.DataRow[COMPARE_FILE].ToString());
             Assert.IsFalse(CheckFile.CompareFile(fileOne, fileTwo), "File Compare Funct");
         }
         #endregion

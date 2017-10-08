@@ -91,6 +91,10 @@ namespace Networking_Encryption
         /// <returns></returns>
         public static string GetPath(string path)
         {
+            if (!checkHasExtention(path))
+            {
+                throw new FormatException("path is not valid");
+            }
             return Directory.GetParent(path).FullName + path;
         }
         #region File Compare Functions
