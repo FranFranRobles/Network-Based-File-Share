@@ -56,13 +56,13 @@ namespace Networking_Encryption
         }
         #endregion
 
-        #region Encode Functions
+        #region Compress Functions
         /// <summary>
         /// Compresses a given string
         /// <para>Returns a compressed string</para>
         /// </summary>
         /// <param name="inputText"> Text inputed by User </param>
-        public string Encode(string inputText)
+        public string Compress(string inputText)
         {
             throw new NotImplementedException();
         }
@@ -71,18 +71,18 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="inputFile"> file to compress</param>
         /// <param name="outputFile">place to save compression</param>
-        public void Encode(string inputFile, string outputFile)
+        public void Compress(string inputFile, string outputFile)
         {
             throw new NotImplementedException();
         }
         #endregion
 
-        #region Decode Functions
+        #region Decompress Functions
         /// <summary>
         /// converts a compressed string back to its original state
         /// </summary>
         /// <param name="encodedStr"> Enconded String</param>
-        public string Decode(string encodedStr)
+        public string Decompress(string encodedStr)
         {
             throw new NotImplementedException();
         }
@@ -91,7 +91,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="inputFile">file to decompress</param>
         /// <param name="outputFile">save location fo decompressed file</param>
-        public void Decode(string inputFile, string outputFile)
+        public void Decompress(string inputFile, string outputFile)
         {
             throw new NotImplementedException();
         }
@@ -118,13 +118,13 @@ namespace Networking_Encryption
         }
         #endregion
 
-        #region Compression Functions
+        #region Encode Functions
         /// <summary>
         /// Compresses given data to into a huffman string
         /// </summary>
         /// <param name="data">data to compress</param>
         /// <returns>a huffman string</returns>
-        private string Compress(byte[] data)
+        private string Encode(byte[] data)
         {
             throw new NotImplementedException();
         }
@@ -133,20 +133,20 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="data">data to compress</param>
         /// <param name="outputFile">place to save bindata</param>
-        private void Compress(byte[] data, FileStream outputFile)
+        private void Encode(byte[] data, FileStream outputFile)
         {
             throw new NotImplementedException();
         }
         #endregion
 
-        #region Decompression Functions
+        #region Decode Functions
         /// <summary>
         /// Decompresses given
         /// <para>Returns a decompressed String</para>
         /// </summary>
         /// <param name="compressedStr">huffman string</param>
         /// <returns>a decoded string</returns>
-        private string Decompress(string compressedStr)
+        private string Decode(string compressedStr)
         {
             throw new NotImplementedException();
         }
@@ -155,7 +155,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="binData">huffman bin data</param>
         /// <param name="outputFile">place to save decompressed data</param>
-        private void Decompress(byte[] binData,FileStream outputFile)
+        private void Decode(byte[] binData,FileStream outputFile)
         {
             throw new NotImplementedException();
         }

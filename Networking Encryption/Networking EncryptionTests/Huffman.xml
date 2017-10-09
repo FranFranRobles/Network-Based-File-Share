@@ -23,7 +23,6 @@
     <fileToCompress>..\..\EncryptionTestFiles\GifToEncryptOne.gif</fileToCompress>
     <compressedFile>..\..\EncryptionTestFiles\EncryptedGifOne.gif</compressedFile>
     <decompressedFile>..\..\EncryptionTestFiles\DecryptedGifOne.gif</decompressedFile>
-  
 </OneFile>
   <TwoFile>
     <fileToCompressOne>..\..\EncryptionTestFiles\TextToEncryptOne.txt</fileToCompressOne>

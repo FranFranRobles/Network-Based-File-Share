@@ -442,7 +442,7 @@ namespace Networking_Encryption
         public string CompressEncrypt(string message, ref KeyHolder keys, string seed = null,string key = null)
         {
             HuffmanTree hTree = new HuffmanTree();
-            return  EncryptStr(hTree.Encode(message), ref keys, seed, key);
+            return  EncryptStr(hTree.Compress(message), ref keys, seed, key);
         }
         /// <summary>
         /// Compresses a file then encrypts it
@@ -457,7 +457,7 @@ namespace Networking_Encryption
             // it would remove the psuedo randomness of the encryption.
             throw new NotImplementedException("read comment on beging of the function");
             HuffmanTree hTree = new HuffmanTree();
-            hTree.Encode(inputFile, outputFile);
+            hTree.Compress(inputFile, outputFile);
             return Encrypt(inputFile, outputFile, seed, key);
         }
         #endregion

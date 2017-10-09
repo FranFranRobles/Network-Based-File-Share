@@ -114,8 +114,10 @@ namespace Networking_Encryption.Tests
         [TestCategory(CHECK_FILE_CAT)]
         public void GetPathTestPass()
         {
-            string path = "checkFileData.xml";
+            string path = "..\\..\\EncryptionTestFiles\\EncryptedPngOne.png";
+            string retPath = CheckFile.GetPath(path);
             Assert.AreEqual(Directory.GetParent(path).FullName + path, CheckFile.GetPath(path));
+            Assert.IsTrue(File.Exists(retPath), " file does not exsist");
         }
         [TestMethod()]
         [TestCategory(EXCEPTION_CAT)]
