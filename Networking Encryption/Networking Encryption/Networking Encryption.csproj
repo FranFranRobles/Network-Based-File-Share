@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FilesExtentionFuncts.cs" />
+    <Compile Include="Heap.cs" />
     <Compile Include="KeyHolder.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="ServerClient.cs" />

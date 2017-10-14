@@ -1,0 +1,23 @@
+﻿<heap>
+  <insertRemove>
+    <size>3</size>
+  </insertRemove>
+  <insertRemove>
+    <size>10</size>
+  </insertRemove>
+  <insertRemove>
+    <size>50</size>
+  </insertRemove>
+  <insertRemove>
+    <size>350</size>
+  </insertRemove>
+  <insertRemove>
+    <size>1500</size>
+  </insertRemove>
+  <insertRemove>
+    <size>10000</size>
+  </insertRemove>
+  <insertRemove>
+    <size>100000</size>
+  </insertRemove>
+</heap>

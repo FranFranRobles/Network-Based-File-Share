@@ -1,0 +1,213 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Networking_Encryption;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Networking_Encryption.Tests
+{
+    [TestClass()]
+    public class HeapTests
+    {
+        const string PROVIDER_TYPE = "Microsoft.VisualStudio.TestTools.DataSource.XML";
+        const string FILE = "|DataDirectory|\\Heap.xml";
+        const string HEAP_CAT = "Heap Tests";
+        const string TEST_CONST = "insertRemove";
+        const int MINVAL = 0;
+        const int MAXVAL = 1000000;
+        const string SIZE = "size";
+
+        #region Test intializer
+        private TestContext testContextInstance;
+        public TestContext TestContext
+        {
+            get { return testContextInstance; }
+            set { testContextInstance = value; }
+        }
+        Heap<int> heap = null;
+        [TestInitialize]
+        public void TestIntializer()
+        {
+            heap = new Heap<int>();
+        }
+        #endregion
+
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void TestDefaultCTOR()
+        {
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+        }
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void TestHeapafyArr()
+        {
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] list = intializeArr(size);
+            heap = new Heap<int>(list);
+            Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
+            Assert.AreEqual(size, heap.Size, "heap should not be empty");
+            Array.Sort(list);
+            TestsRemove(list);
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+        }
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void TestMergeHeap()
+        {
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] list = intializeArr(size);
+            Heap<int> mergeHeap = new Heap<int>(list);
+            heap = new Heap<int>(mergeHeap);
+            Assert.IsFalse(mergeHeap.IsEmpty, "heap should not be empty");
+            Assert.AreEqual(size, mergeHeap.Size, "heap should not be empty");
+            Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
+            Assert.AreEqual(mergeHeap.Size, heap.Size, "heap should not be empty");
+            for (int element = 0; element < heap.Size; element++)
+            {
+                Assert.AreEqual(mergeHeap.Remove(), heap.Remove(), "removed different elements");
+            }
+            Assert.AreEqual(mergeHeap.Size, heap.Size, "invalid size found");
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+            Assert.AreEqual(mergeHeap.IsEmpty, heap.IsEmpty, "expected a different value");
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+        }
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void TestAdditionOpOverload()
+        {
+            throw new NotImplementedException();
+        }
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void InsertTest()
+        {
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] list = intializeArr(size);
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+            for (int index = 0; index < list.Length; index++)
+            {
+                heap.Insert(list[index]);
+            }
+            Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
+            Assert.AreEqual(size, heap.Size, "heap should not be empty");
+            Array.Sort(list);
+            TestsRemove(list);
+            Assert.IsTrue(heap.IsEmpty);
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+        }
+
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void RemoveTest()
+        {
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] list = intializeArr(size);
+            heap = new Heap<int>(list);
+            Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
+            Assert.AreEqual(size, heap.Size, "heap should not be empty");
+            Array.Sort(list);
+            TestsRemove(list);
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+        }
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void ReplaceTest()
+        {
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+            int[] list = new int[Convert.ToInt32(TestContext.DataRow[SIZE])];
+            for (int index = 0; index < list.Length; index++)
+            {
+                list[index] = index;
+            }
+            int arrIndex = 0;
+            for (int count = 0; count < list.Length; count++)
+            {
+                if (count < list.Length / 2)
+                {
+                    heap.Insert(list[count]);
+                }
+                else
+                {
+                    Assert.AreEqual(list[arrIndex], heap.Replace(list[count]), "wrong element removed");
+                    arrIndex++;
+                }
+            }
+            while (arrIndex < list.Length)
+            {
+                Assert.AreEqual(list[arrIndex], heap.Remove(), "wrong element removed");
+            }
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+
+        }
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
+        public void FindMinTest()
+        {
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] list = intializeArr(size);
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+            for (int index = 0; index < list.Length; index++)
+            {
+                heap.Insert(list[index]);
+            }
+            Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
+            Assert.AreEqual(size, heap.Size, "heap should not be empty");
+            Array.Sort(list);
+            for (int index = 0; index < list.Length; index++)
+            {
+                Assert.AreEqual(list[index], heap.FindMin(), "incorrect min returned");
+                Assert.AreEqual(list[index], heap.Remove(), "returned the wrong element");
+            }
+            Assert.IsTrue(heap.IsEmpty, "heap should be empty");
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+        }
+
+        #region Test Helpers
+        /// <summary>
+        /// creates an array to the specified size
+        /// <para>an array filled with random nubmers</para>
+        /// </summary>
+        /// <param name="size">size of the array to create</param>
+        /// <returns> an array filled with random numbers</returns>
+        static int[] intializeArr(int size)
+        {
+            int[] temp = new int[size];
+            Random randGen = new Random();
+            for (int i = 0; i < size; i++)
+            {
+                temp[i] = randGen.Next(MINVAL, MAXVAL);
+            }
+            return temp;
+        }
+        /// <summary>
+        /// test to check if the given array is found inside the heap
+        /// </summary>
+        /// <param name="list">list to check</param>
+        private void TestsRemove(int[] list)
+        {
+            foreach (int index in list)
+            {
+                Assert.AreEqual(index, heap.Remove());
+            }
+        }
+        #endregion
+
+    }
+}

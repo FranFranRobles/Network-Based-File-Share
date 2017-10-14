@@ -9,23 +9,56 @@ namespace Networking_Encryption
 {
     public class HuffmanTree
     {
+        // class constants
+        private const int MAX_BYTE_VAL = 256;
+
         #region BinNode Class
         /// <summary>
         /// Class holds an element a frequency associated to the elment and referencees to other nodes
         /// </summary>
         private class BinNode
         {
-            byte Element;
-            int freq = 0;
-            BinNode Left = null;
-            BinNode Right = null;
+            public byte[] Element;
+            public int Freq;
+            public BinNode Left;
+            public BinNode Right;
 
-            private BinNode(byte element, int frequency, ref BinNode left, ref BinNode right)
+            public BinNode(byte[] element, int frequency, BinNode left = null, BinNode right = null)
             {
                 Element = element;
-                freq = frequency;
+                Freq = frequency;
                 Left = left;
                 Right = right;
+            }
+            public BinNode()
+            {
+                Element = new byte[0];
+                Freq = 0;
+                Left = Right = null;
+            }
+            /// <summary>
+            /// Combines the two nodes to create a new one holding the sum of the both parts
+            /// </summary>
+            /// <param name="leftNode"></param>
+            /// <param name="rightNode"></param>
+            /// <returns></returns>
+            public static BinNode operator +(BinNode leftNode, BinNode rightNode)
+            {
+                return new BinNode(MergeElements(leftNode.Element, rightNode.Element), 
+                    (leftNode.Freq + rightNode.Freq), leftNode, rightNode);
+            }
+            /// <summary>
+            /// Merges the two element arrays into one with the left hand opperand being placed 
+            /// first in the array
+            /// </summary>
+            /// <param name="leftArray">left half of array to merge</param>
+            /// <param name="rightArray">right half of array to merge</param>
+            private static byte[] MergeElements(byte[] leftArray, byte[] rightArray)
+            {
+                byte[] newElementArr = new byte[leftArray.Length + rightArray.Length];
+                Array.Copy(leftArray, newElementArr, leftArray.Length);
+                Array.Copy(rightArray, 0, newElementArr, leftArray.Length, rightArray.Length);
+                return newElementArr;
             }
         }
         #endregion
@@ -64,7 +97,9 @@ namespace Networking_Encryption
         /// <param name="inputText"> Text inputed by User </param>
         public string Compress(string inputText)
         {
-            throw new NotImplementedException();
+            EncodedData = Encoding.ASCII.GetBytes(inputText);
+            makeTree(CalcFreqency());
+            return Encode();
         }
         /// <summary>
         /// Compresses a given file
@@ -73,7 +108,9 @@ namespace Networking_Encryption
         /// <param name="outputFile">place to save compression</param>
         public void Compress(string inputFile, string outputFile)
         {
-            throw new NotImplementedException();
+            GetFileBytes(inputFile);
+            makeTree(CalcFreqency());
+            Encode(outputFile);
         }
         #endregion
 
@@ -84,7 +121,9 @@ namespace Networking_Encryption
         /// <param name="encodedStr"> Enconded String</param>
         public string Decompress(string encodedStr)
         {
-            throw new NotImplementedException();
+            EncodedData = Encoding.ASCII.GetBytes(encodedStr);
+            makeTree(FindFreqencies());
+            return Decode();
         }
         /// <summary>
         /// converts a compressed File back to its original state
@@ -93,7 +132,9 @@ namespace Networking_Encryption
         /// <param name="outputFile">save location fo decompressed file</param>
         public void Decompress(string inputFile, string outputFile)
         {
-            throw new NotImplementedException();
+            GetFileBytes(inputFile);
+            makeTree(FindFreqencies());
+            Decode(outputFile);
         }
         #endregion
 
@@ -102,19 +143,69 @@ namespace Networking_Encryption
         /// Calculates the Frequency of each differential byte & creates the Huffman Tree
         /// </summary>
         /// <returns></returns>
-        private void CalcFreqency()
+        private BinNode[] CalcFreqency()
+        {
+            if (EncodedData == null)
+            {
+                throw new NullReferenceException("No data found to Encode");
+            }
+            int[] freqList = new int[MAX_BYTE_VAL]; // for the domain of a byte[0,255]
+            for (int index = 0; index < EncodedData.Length; index++)
+            {
+                freqList[EncodedData[index]]++;
+            }
+            BinNode[] nodeList = new BinNode[MAX_BYTE_VAL];
+            for (int index = 0; index < MAX_BYTE_VAL; index++)
+            {
+                byte[] temp = new byte[1];
+                temp[0] = (byte)index;
+                nodeList[index] = new BinNode(temp, freqList[index]);
+            }
+            return nodeList;
+        }
+        private BinNode[] FindFreqencies()
         {
             throw new NotImplementedException();
-            //call make tree function
-
         }
         /// <summary>
         /// Creates a huffman tree off the freqency list
         /// </summary>
-        /// <param name="freqArray"></param>
-        private void makeTree(List<BinNode> freqList)
+        /// <param name="freqList">list to make </param>
+        private void makeTree(BinNode[] freqList)
         {
-            throw new NotImplementedException();
+            if (freqList.Length <= 0)
+            {
+                throw new ArgumentException();
+            }
+            Heap<BinNode> heap = new Heap<BinNode>(freqList);
+            while (!heap.IsEmpty)
+            {
+                heap.Insert(heap.Remove() + heap.Remove());
+            }
+            root = heap.Remove();
+        }
+
+        /// <summary>
+        /// function combines two element list to one
+        /// </summary>
+        /// <param name="element1">first half</param>
+        /// <param name="element2">second half</param>
+        /// <returns></returns>
+        private byte[] CreateElement(byte[] element1, byte[] element2)
+        {
+            byte[] temp = new byte[element1.Length + element2.Length];
+            int index = 0;
+            foreach (byte num in element1)
+            {
+                temp[index] = num;
+                index++;
+            }
+            foreach (byte num in element2)
+            {
+                temp[index] = num;
+                index++;
+            }
+            return temp;
         }
         #endregion
 
@@ -122,9 +213,8 @@ namespace Networking_Encryption
         /// <summary>
         /// Compresses given data to into a huffman string
         /// </summary>
-        /// <param name="data">data to compress</param>
         /// <returns>a huffman string</returns>
-        private string Encode(byte[] data)
+        private string Encode()
         {
             throw new NotImplementedException();
         }
@@ -133,7 +223,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="data">data to compress</param>
         /// <param name="outputFile">place to save bindata</param>
-        private void Encode(byte[] data, FileStream outputFile)
+        private void Encode(string outputFile)
         {
             throw new NotImplementedException();
         }
@@ -146,7 +236,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="compressedStr">huffman string</param>
         /// <returns>a decoded string</returns>
-        private string Decode(string compressedStr)
+        private string Decode()
         {
             throw new NotImplementedException();
         }
@@ -155,7 +245,7 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="binData">huffman bin data</param>
         /// <param name="outputFile">place to save decompressed data</param>
-        private void Decode(byte[] binData,FileStream outputFile)
+        private void Decode(string outputFile)
         {
             throw new NotImplementedException();
         }
@@ -218,6 +308,23 @@ namespace Networking_Encryption
         /// </summary>
         public void Flush()
         {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// function gets all of the bytes found inside a file &  sets the encodedData[]
+        /// attribute of the class
+        /// </summary>
+        /// <param name="inputFile">file to get all bytes from</param>
+        private void GetFileBytes(string inputFile)
+        {
+            using (FileStream inputStrm = new FileStream(inputFile,FileMode.Open,FileAccess.Read))
+            {
+                using (BinaryReader binReader = new BinaryReader(inputStrm))
+                {
+                    long len = new FileInfo(inputFile).Length;
+                    EncodedData = binReader.ReadBytes((int)len);
+                }
+            }
             throw new NotImplementedException();
         }
         #endregion

@@ -14,6 +14,7 @@ namespace Networking_Encryption.Tests
     {
         #region Test Constants
         //huffman.xml node constants
+        const string RESOURCE_CAT = "Resource Tests";
         const string ONE_FILE = "OneFile";
         const string TWO_FILE = "TwoFile";
         const string RESOURCE = "Resource";
@@ -22,7 +23,7 @@ namespace Networking_Encryption.Tests
         const string COMPRESSED_FILE = "compressedFile";
         const string DECOMPRESSED_FILE = "decompressedFile";
         const string PROVIDER_TYPE = "Microsoft.VisualStudio.TestTools.DataSource.XML";
-        const string FILE_LOCATION = "|DataDirectory|\\Tests.xml";
+        const string FILE = "|DataDirectory|\\Huffman.xml";
         const string ONE_KEYWORD = "One";
         const string TWO_KEYWORD = "Two";
         // test constants
@@ -66,7 +67,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
-        [DataSource(PROVIDER_TYPE, FILE_LOCATION, ONE_FILE, DataAccessMethod.Sequential)]
+        [DataSource(PROVIDER_TYPE, FILE, ONE_FILE, DataAccessMethod.Sequential)]
         public void CompressFileTest()
         {
             string fileToCompress = TestContext.DataRow[FILE_TO_COMPRESS].ToString();
@@ -76,7 +77,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
-        [DataSource(PROVIDER_TYPE, FILE_LOCATION, TWO_FILE, DataAccessMethod.Sequential)]
+        [DataSource(PROVIDER_TYPE, FILE, TWO_FILE, DataAccessMethod.Sequential)]
         public void CompressFileSameFileTest()
         {
             string fileToCompressOne = TestContext.DataRow[FILE_TO_COMPRESS + ONE_KEYWORD].ToString();
@@ -89,7 +90,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
-        [DataSource(PROVIDER_TYPE, FILE_LOCATION, DIF_FILE, DataAccessMethod.Sequential)]
+        [DataSource(PROVIDER_TYPE, FILE, DIF_FILE, DataAccessMethod.Sequential)]
         public void CompressFileDifFileTest()
         {
             string fileToCompressOne = TestContext.DataRow[FILE_TO_COMPRESS + ONE_KEYWORD].ToString();
@@ -117,7 +118,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
-        [DataSource(PROVIDER_TYPE, FILE_LOCATION, ONE_FILE, DataAccessMethod.Sequential)]
+        [DataSource(PROVIDER_TYPE, FILE, ONE_FILE, DataAccessMethod.Sequential)]
         public void DecompressFileTest()
         {
             string fileToCompress = TestContext.DataRow[FILE_TO_COMPRESS].ToString();
@@ -131,7 +132,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
-        [DataSource(PROVIDER_TYPE, FILE_LOCATION, TWO_FILE, DataAccessMethod.Sequential)]
+        [DataSource(PROVIDER_TYPE, FILE, TWO_FILE, DataAccessMethod.Sequential)]
         public void DecompressFileSameFileTest()
         {
             string fileToCompressOne = TestContext.DataRow[FILE_TO_COMPRESS + ONE_KEYWORD].ToString();
@@ -151,7 +152,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
-        [DataSource(PROVIDER_TYPE, FILE_LOCATION, DIF_FILE, DataAccessMethod.Sequential)]
+        [DataSource(PROVIDER_TYPE, FILE, DIF_FILE, DataAccessMethod.Sequential)]
         public void DecompressFileDifFileTest()
         {
             string fileToCompressOne = TestContext.DataRow[FILE_TO_COMPRESS + ONE_KEYWORD].ToString();
@@ -294,6 +295,53 @@ namespace Networking_Encryption.Tests
             Assert.IsFalse(tree.IsNull, "should be null");
             tree.Flush();
             Assert.IsTrue(tree.IsNull, "should be null");
+        }
+        #endregion
+
+        #region Resource Tests
+        [TestMethod()]
+        [TestCategory(H_MAN_CAT)]
+        [TestCategory(RESOURCE_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, ONE_FILE, DataAccessMethod.Sequential)]
+        public void TestResourceOneFile()
+        {
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPRESS].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[COMPRESSED_FILE].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[DECOMPRESSED_FILE].ToString())));
+        }
+        [TestMethod()]
+        [TestCategory(H_MAN_CAT)]
+        [TestCategory(RESOURCE_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, TWO_FILE, DataAccessMethod.Sequential)]
+        public void TestResourceTwoFile()
+        {
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPRESS + ONE_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPRESS + TWO_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[COMPRESSED_FILE + ONE_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[COMPRESSED_FILE + TWO_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[DECOMPRESSED_FILE + ONE_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[DECOMPRESSED_FILE + TWO_KEYWORD].ToString())));
+        }
+        [TestMethod()]
+        [TestCategory(H_MAN_CAT)]
+        [TestCategory(RESOURCE_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, DIF_FILE, DataAccessMethod.Sequential)]
+        public void TestResourceDifFile()
+        {
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPRESS + ONE_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[FILE_TO_COMPRESS + TWO_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[COMPRESSED_FILE + ONE_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[COMPRESSED_FILE + TWO_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[DECOMPRESSED_FILE + ONE_KEYWORD].ToString())));
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow[DECOMPRESSED_FILE + TWO_KEYWORD].ToString())));
+        }
+        [TestMethod()]
+        [TestCategory(H_MAN_CAT)]
+        [TestCategory(RESOURCE_CAT)]
+        [DataSource(PROVIDER_TYPE, FILE, RESOURCE, DataAccessMethod.Sequential)]
+        public void TestResourceLocations()
+        {
+            Assert.IsTrue(File.Exists(CheckFile.GetPath(TestContext.DataRow["file"].ToString())));
         }
         #endregion
 

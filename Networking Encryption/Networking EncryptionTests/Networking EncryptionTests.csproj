@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="EncryptionTests.cs" />
     <Compile Include="CheckFileTests.cs" />
+    <Compile Include="HeapTests.cs" />
     <Compile Include="HuffmanTreeTests.cs" />
     <Compile Include="KeyHolderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -112,8 +113,13 @@
     <Content Include="EncryptionTestFiles\PngImageToEncryptTwo.png" />
     <Content Include="EncryptionTestFiles\TextToEncryptOne.txt" />
     <Content Include="EncryptionTestFiles\TextToEncryptTwo.txt" />
+    <Content Include="Heap.xml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Huffman.xml">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Tests.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
