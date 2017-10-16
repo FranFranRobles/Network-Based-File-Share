@@ -1,6 +1,15 @@
 ﻿<heap>
   <insertRemove>
+    <size>1</size>
+  </insertRemove>
+  <insertRemove>
+    <size>2</size>
+  </insertRemove>
+  <insertRemove>
     <size>3</size>
+  </insertRemove>
+  <insertRemove>
+    <size>4</size>
   </insertRemove>
   <insertRemove>
     <size>10</size>

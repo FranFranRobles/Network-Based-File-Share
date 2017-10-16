@@ -177,7 +177,7 @@ namespace Networking_Encryption
             {
                 throw new ArgumentException();
             }
-            Heap<BinNode> heap = new Heap<BinNode>(freqList);
+            Heap<BinNode> heap = new Heap<BinNode>(CompareFunction, freqList);
             while (!heap.IsEmpty)
             {
                 heap.Insert(heap.Remove() + heap.Remove());
@@ -303,6 +303,17 @@ namespace Networking_Encryption
         #endregion
 
         #region Misc functions
+        /// <summary>
+        /// function  compares two nodes  left < right
+        /// <para> if left param is less than right returns true</para>
+        /// </summary>
+        /// <param name="left">left node of the eniquality</param>
+        /// <param name="right">right node of the eniquality</param>
+        /// <returns></returns>
+        private bool CompareFunction(BinNode left,BinNode right)
+        {
+            return left.Freq < right.Freq ? true : false;
+        }
         /// <summary>
         /// function clears stored data within the huffman tree
         /// </summary>

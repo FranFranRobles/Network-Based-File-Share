@@ -30,13 +30,12 @@ namespace Networking_Encryption.Tests
         [TestInitialize]
         public void TestIntializer()
         {
-            heap = new Heap<int>();
+            heap = new Heap<int>(compareInts);
         }
         #endregion
 
         [TestMethod()]
         [TestCategory(HEAP_CAT)]
-        [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
         public void TestDefaultCTOR()
         {
             Assert.IsTrue(heap.IsEmpty, "heap should be empty");
@@ -49,7 +48,7 @@ namespace Networking_Encryption.Tests
         {
             int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] list = intializeArr(size);
-            heap = new Heap<int>(list);
+            heap = new Heap<int>(compareInts, list);
             Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
             Assert.AreEqual(size, heap.Size, "heap should not be empty");
             Array.Sort(list);
@@ -64,7 +63,7 @@ namespace Networking_Encryption.Tests
         {
             int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] list = intializeArr(size);
-            Heap<int> mergeHeap = new Heap<int>(list);
+            Heap<int> mergeHeap = new Heap<int>(compareInts, list);
             heap = new Heap<int>(mergeHeap);
             Assert.IsFalse(mergeHeap.IsEmpty, "heap should not be empty");
             Assert.AreEqual(size, mergeHeap.Size, "heap should not be empty");
@@ -84,7 +83,39 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, FILE, TEST_CONST, DataAccessMethod.Sequential)]
         public void TestAdditionOpOverload()
         {
-            throw new NotImplementedException();
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] list = intializeArr(size);
+            Heap<int> heapTwo = new Heap<int>(compareInts);
+            for (int index = 0; index < list.Length; index++)
+            {
+                if (index % 2 == 0)
+                {
+                    heap.Insert(list[index]);
+                }
+                else
+                {
+                    heapTwo.Insert(list[index]);
+                }
+            }
+            Assert.IsFalse(heap.IsEmpty, "should not be empty");
+            Assert.IsFalse(heapTwo.IsEmpty, "should not be empty");
+            Heap<int> HeapThree = heap + heapTwo;
+            Assert.IsFalse(HeapThree.IsEmpty, "should not be empty");
+            Assert.IsFalse(heap.IsEmpty, "should not be empty");
+            Assert.IsFalse(heapTwo.IsEmpty, "should not be empty");
+            Assert.AreEqual(heap.Size + heapTwo.Size, HeapThree.Size, "Invalid Size Returned");
+            Assert.AreEqual(size, HeapThree.Size, "heap should not be empty");
+            Array.Sort(list);
+            for (int index = 0; index < heap.Size; index++)
+            {
+                Assert.AreEqual(list[index], HeapThree.Remove(), "removed different elements");
+            }
+            Assert.AreEqual(heap.Size, heapTwo.Size, "Sizes should be Equal");
+            Assert.AreEqual(heap.IsEmpty, heapTwo.IsEmpty, "heaps should contain the same states");
+            Assert.IsFalse(heap.IsEmpty);
+            Assert.AreNotEqual(0, heap.Size);
+            Assert.AreEqual(0, HeapThree.Size, "heap should be empty");
+            Assert.IsTrue(HeapThree.IsEmpty, "heap should be empty");
         }
         [TestMethod()]
         [TestCategory(HEAP_CAT)]
@@ -114,7 +145,7 @@ namespace Networking_Encryption.Tests
         {
             int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] list = intializeArr(size);
-            heap = new Heap<int>(list);
+            heap = new Heap<int>(compareInts, list);
             Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
             Assert.AreEqual(size, heap.Size, "heap should not be empty");
             Array.Sort(list);
@@ -180,6 +211,17 @@ namespace Networking_Encryption.Tests
         }
 
         #region Test Helpers
+        /// <summary>
+        /// function compares the following equality left < right
+        /// <para>Returns true if left param is less than the right param</para>
+        /// </summary>
+        /// <param name="left">left value</param>
+        /// <param name="right">right vale</param>
+        /// <returns></returns>
+        static bool compareInts(int left, int right)
+        {
+            return left < right ? true : false;
+        }
         /// <summary>
         /// creates an array to the specified size
         /// <para>an array filled with random nubmers</para>
