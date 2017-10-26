@@ -177,6 +177,10 @@ namespace Networking_Encryption
         /// <returns>the uppermost element of the heap</returns>
         public Type Replace(Type element)
         {
+            if (size <= 1)
+            {
+                throw new InvalidOperationException(" no data to replace");
+            }
             Type temp = tree[1];
             tree[1] = element;
             RealignHeap();

@@ -14,7 +14,10 @@ namespace Networking_Encryption.Tests
         const string PROVIDER_TYPE = "Microsoft.VisualStudio.TestTools.DataSource.XML";
         const string FILE = "|DataDirectory|\\Heap.xml";
         const string HEAP_CAT = "Heap Tests";
+        const string EXCEPTION_CAT = "Exception";
         const string TEST_CONST = "insertRemove";
+        const string REPLACE_TEST = "replace";
+        const string REPLACE_NUM = "num";
         const int MINVAL = 0;
         const int MAXVAL = 1000000;
         const string SIZE = "size";
@@ -207,7 +210,33 @@ namespace Networking_Encryption.Tests
             Assert.IsTrue(heap.IsEmpty, "heap should be empty");
             Assert.AreEqual(0, heap.Size, "heap should be empty");
         }
-
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [TestCategory(EXCEPTION_CAT)]
+        [ExpectedException(typeof(InvalidOperationException))]
+        [DataSource(PROVIDER_TYPE, FILE, REPLACE_TEST, DataAccessMethod.Sequential)]
+        public void HeapReplaceSizeZero()
+        {
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+            Assert.IsTrue(heap.IsEmpty, " heap should be empty");
+            int insertNum = Convert.ToInt32(TestContext.DataRow[REPLACE_NUM]);
+            heap.Replace(insertNum);
+        }
+        [TestMethod()]
+        [TestCategory(HEAP_CAT)]
+        [TestCategory(EXCEPTION_CAT)]
+        [ExpectedException(typeof(InvalidOperationException))]
+        [DataSource(PROVIDER_TYPE, FILE, REPLACE_TEST, DataAccessMethod.Sequential)]
+        public void HeapReplaceSizeOne()
+        {
+            Assert.AreEqual(0, heap.Size, "heap should be empty");
+            Assert.IsTrue(heap.IsEmpty, " heap should be empty");
+            int insertNum = Convert.ToInt32(TestContext.DataRow[REPLACE_NUM]);
+            heap.Insert(1);
+            Assert.IsFalse(heap.IsEmpty, " heap should not be empty");
+            Assert.AreEqual(1, heap.Size, "heap should contain one element");
+            heap.Replace(insertNum);
+        }
         #region Test Helpers
         /// <summary>
         /// function compares the following equality left < right

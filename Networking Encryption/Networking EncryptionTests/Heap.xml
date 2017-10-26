@@ -29,4 +29,34 @@
   <insertRemove>
     <size>100000</size>
   </insertRemove>
+  <replace>
+    <num>0</num>
+  </replace>
+  <replace>
+    <num>0</num>
+  </replace>
+  <replace>
+    <num>-5</num>
+  </replace>
+  <replace>
+    <num>-15000</num>
+  </replace>
+  <replace>
+    <num>-53249262</num>
+  </replace>
+  <replace>
+    <num>5</num>
+  </replace>
+  <replace>
+    <num>125</num>
+  </replace>
+  <replace>
+    <num>1547</num>
+  </replace>
+  <replace>
+    <num>189898</num>
+  </replace>
+  <replace>
+    <num>2546119</num>
+  </replace>
 </heap>
