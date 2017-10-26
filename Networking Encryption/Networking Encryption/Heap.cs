@@ -46,23 +46,38 @@ namespace Networking_Encryption
         /// Creates a  deep copy of the given Heap
         /// </summary>
         /// <param name="mergeHeap">heap to copy</param>
-        public Heap(Heap<Type> mergeHeap)
+        public Heap( Heap<Type> mergeHeap)
         {
-            tree = mergeHeap.tree;
-            size = mergeHeap.size;
             compareFunct = mergeHeap.compareFunct;
+            size = mergeHeap.size;
+            tree = new Type[mergeHeap.tree.Length];
+            int index = 0;
+            foreach (Type node in mergeHeap.tree)
+            {
+                tree[index] = node;
+                index++;
+            }
+            if (size != mergeHeap.size)
+            {
+                throw new FormatException("Invalid Heap size");
+            }
         }
         #endregion
 
         #region Operator overloads
         public static Heap<Type> operator +(Heap<Type> heapOne, Heap<Type> heapTwo)
         {
-            Heap<Type> newHeap = new Heap<Type>(heapOne);
-            newHeap.CompareFunction = heapOne.compareFunct;
-            for (int element = 0; element < heapTwo.size; element++)
+            Type[] temp = new Type[heapOne.size + heapTwo.size];
+            int index = 0;
+            for (int i = 1; i <= heapOne.size; i++)
             {
-                newHeap.Insert(heapTwo.Remove());
+                temp[index++] = heapOne.tree[i];
             }
+            for (int i = 1; i <= heapTwo.size; i++)
+            {
+                temp[index++] = heapOne.tree[i];
+            }
+            Heap<Type> newHeap = new Heap<Type>(heapOne.compareFunct,temp);
             if (newHeap.size != heapOne.size + heapTwo.size)
             {
                 throw new InvalidLengthException("failed to create to new heap");
@@ -184,25 +199,36 @@ namespace Networking_Encryption
         private void RealignHeap()
         {
             int CurrLoc = 1;
-            while (CurrLoc < size)
+            while (CurrLoc < size) // mem out of bounds of arr
             {
-                if (!EqualityComparer<Type>.Default.Equals(tree[2 * CurrLoc + 1], default(Type)) &&
-                    !EqualityComparer<Type>.Default.Equals(tree[2 * CurrLoc], default(Type)))
+                if ((2 * CurrLoc) <= size && (2 * CurrLoc + 1 <= size))
                 {
-                    if (compareFunct(tree[2 * CurrLoc], tree[2 * CurrLoc + 1]) &&
-                        compareFunct(tree[2 * CurrLoc], tree[CurrLoc]))
+                    if (!EqualityComparer<Type>.Default.Equals(tree[2 * CurrLoc + 1], default(Type)) &&
+                        !EqualityComparer<Type>.Default.Equals(tree[2 * CurrLoc], default(Type)))
                     {
-                        Swap(ref tree[2 * CurrLoc], ref tree[CurrLoc]);
-                        CurrLoc *= 2;
+                        if (compareFunct(tree[2 * CurrLoc], tree[2 * CurrLoc + 1]) &&
+                            compareFunct(tree[2 * CurrLoc], tree[CurrLoc]))
+                        {
+                            Swap(ref tree[2 * CurrLoc], ref tree[CurrLoc]);
+                            CurrLoc *= 2;
+                        }
+                        else if (compareFunct(tree[2 * CurrLoc + 1], tree[CurrLoc]))
+                        {
+                            Swap(ref tree[2 * CurrLoc + 1], ref tree[CurrLoc]);
+                            CurrLoc = 2 * CurrLoc + 1;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    else if (compareFunct(tree[2 * CurrLoc + 1], tree[CurrLoc]))
+                    else
                     {
-                        Swap(ref tree[2 * CurrLoc + 1], ref tree[CurrLoc]);
-                        CurrLoc = 2 * CurrLoc + 1;
+                        break;
                     }
                 }
-                else if (!EqualityComparer<Type>.Default.Equals(tree[2 * CurrLoc], default(Type)) &&
-                    compareFunct(tree[2 * CurrLoc], tree[CurrLoc]))
+                else if (2 * CurrLoc <= size && !EqualityComparer<Type>.Default.Equals(tree[2 * CurrLoc],
+                    default(Type)) && compareFunct(tree[2 * CurrLoc], tree[CurrLoc]))
                 {
                     Swap(ref tree[2 * CurrLoc], ref tree[CurrLoc]);
                     CurrLoc *= 2;
@@ -211,6 +237,7 @@ namespace Networking_Encryption
                 {
                     break;
                 }
+                //CurrLoc++;
             }
         }
 

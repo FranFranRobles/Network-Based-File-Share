@@ -69,7 +69,7 @@ namespace Networking_Encryption.Tests
             Assert.AreEqual(size, mergeHeap.Size, "heap should not be empty");
             Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
             Assert.AreEqual(mergeHeap.Size, heap.Size, "heap should not be empty");
-            for (int element = 0; element < heap.Size; element++)
+            while (heap.Size > 0)
             {
                 Assert.AreEqual(mergeHeap.Remove(), heap.Remove(), "removed different elements");
             }
@@ -85,18 +85,8 @@ namespace Networking_Encryption.Tests
         {
             int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] list = intializeArr(size);
-            Heap<int> heapTwo = new Heap<int>(compareInts);
-            for (int index = 0; index < list.Length; index++)
-            {
-                if (index % 2 == 0)
-                {
-                    heap.Insert(list[index]);
-                }
-                else
-                {
-                    heapTwo.Insert(list[index]);
-                }
-            }
+            Heap<int> heapTwo = new Heap<int>(compareInts,list);
+            heap = new Heap<int>(heapTwo);
             Assert.IsFalse(heap.IsEmpty, "should not be empty");
             Assert.IsFalse(heapTwo.IsEmpty, "should not be empty");
             Heap<int> HeapThree = heap + heapTwo;
@@ -104,11 +94,13 @@ namespace Networking_Encryption.Tests
             Assert.IsFalse(heap.IsEmpty, "should not be empty");
             Assert.IsFalse(heapTwo.IsEmpty, "should not be empty");
             Assert.AreEqual(heap.Size + heapTwo.Size, HeapThree.Size, "Invalid Size Returned");
-            Assert.AreEqual(size, HeapThree.Size, "heap should not be empty");
+            Assert.AreEqual(2 * size, HeapThree.Size, "heap should not be empty");
             Array.Sort(list);
-            for (int index = 0; index < heap.Size; index++)
+            int index = 0;
+            while (HeapThree.Size > 0)
             {
                 Assert.AreEqual(list[index], HeapThree.Remove(), "removed different elements");
+                Assert.AreEqual(list[index++], HeapThree.Remove(), "removed different elements");
             }
             Assert.AreEqual(heap.Size, heapTwo.Size, "Sizes should be Equal");
             Assert.AreEqual(heap.IsEmpty, heapTwo.IsEmpty, "heaps should contain the same states");
@@ -159,31 +151,37 @@ namespace Networking_Encryption.Tests
         public void ReplaceTest()
         {
             Assert.AreEqual(0, heap.Size, "heap should be empty");
-            int[] list = new int[Convert.ToInt32(TestContext.DataRow[SIZE])];
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] list = intializeArr(size);
+            List<int> intializer = new List<int>();
+            List<int> ReplaceList = new List<int>();
             for (int index = 0; index < list.Length; index++)
             {
-                list[index] = index;
-            }
-            int arrIndex = 0;
-            for (int count = 0; count < list.Length; count++)
-            {
-                if (count < list.Length / 2)
+                if (index % 2 == 0)
                 {
-                    heap.Insert(list[count]);
+                    intializer.Add(list[index]);    
                 }
                 else
                 {
-                    Assert.AreEqual(list[arrIndex], heap.Replace(list[count]), "wrong element removed");
-                    arrIndex++;
+                    ReplaceList.Add(list[index]);
                 }
             }
-            while (arrIndex < list.Length)
+            heap = new Heap<int>(compareInts, intializer.ToArray());
+            Assert.IsFalse(heap.IsEmpty, " heap should not be empty");
+            Assert.AreEqual(intializer.Count, heap.Size, " invailid heap size");
+            int i = 0;
+            for (int index = 0; index < ReplaceList.Count; index++)
             {
-                Assert.AreEqual(list[arrIndex], heap.Remove(), "wrong element removed");
+                Assert.AreEqual(list[i++], heap.Replace(ReplaceList[index]));
+            }
+            Assert.IsFalse(heap.IsEmpty, "heap should not be empty");
+            Assert.AreEqual(list.Length - i, heap.Size, " invalid length found");
+            while (heap.Size > 0)
+            {
+                Assert.AreEqual(list[i++], heap.Remove());
             }
             Assert.IsTrue(heap.IsEmpty, "heap should be empty");
-            Assert.AreEqual(0, heap.Size, "heap should be empty");
-
+            Assert.AreEqual(0, heap.Size, " heap should be empty");
         }
         [TestMethod()]
         [TestCategory(HEAP_CAT)]
@@ -231,11 +229,11 @@ namespace Networking_Encryption.Tests
         static int[] intializeArr(int size)
         {
             int[] temp = new int[size];
-            Random randGen = new Random();
             for (int i = 0; i < size; i++)
             {
-                temp[i] = randGen.Next(MINVAL, MAXVAL);
+                temp[i] = i + 1;
             }
+            //Array.Sort(temp,);
             return temp;
         }
         /// <summary>
