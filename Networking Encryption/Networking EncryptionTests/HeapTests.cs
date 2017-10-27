@@ -204,7 +204,7 @@ namespace Networking_Encryption.Tests
             Array.Sort(list);
             for (int index = 0; index < list.Length; index++)
             {
-                Assert.AreEqual(list[index], heap.FindMin(), "incorrect min returned");
+                Assert.AreEqual(list[index], heap.FindTop(), "incorrect min returned");
                 Assert.AreEqual(list[index], heap.Remove(), "returned the wrong element");
             }
             Assert.IsTrue(heap.IsEmpty, "heap should be empty");
@@ -220,21 +220,6 @@ namespace Networking_Encryption.Tests
             Assert.AreEqual(0, heap.Size, "heap should be empty");
             Assert.IsTrue(heap.IsEmpty, " heap should be empty");
             int insertNum = Convert.ToInt32(TestContext.DataRow[REPLACE_NUM]);
-            heap.Replace(insertNum);
-        }
-        [TestMethod()]
-        [TestCategory(HEAP_CAT)]
-        [TestCategory(EXCEPTION_CAT)]
-        [ExpectedException(typeof(InvalidOperationException))]
-        [DataSource(PROVIDER_TYPE, FILE, REPLACE_TEST, DataAccessMethod.Sequential)]
-        public void HeapReplaceSizeOne()
-        {
-            Assert.AreEqual(0, heap.Size, "heap should be empty");
-            Assert.IsTrue(heap.IsEmpty, " heap should be empty");
-            int insertNum = Convert.ToInt32(TestContext.DataRow[REPLACE_NUM]);
-            heap.Insert(1);
-            Assert.IsFalse(heap.IsEmpty, " heap should not be empty");
-            Assert.AreEqual(1, heap.Size, "heap should contain one element");
             heap.Replace(insertNum);
         }
         #region Test Helpers

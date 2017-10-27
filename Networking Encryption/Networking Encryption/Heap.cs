@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Networking_Encryption
 {
@@ -65,19 +62,29 @@ namespace Networking_Encryption
         #endregion
 
         #region Operator overloads
+        /// <summary>
+        /// function takes two heaps and concatenates them into a third heap 
+        /// <para>Note: function will use the compare function of the left Param</para>
+        /// </summary>
+        /// <param name="heapOne">left param</param>
+        /// <param name="heapTwo">right param</param>
+        /// <returns>returns a new heap with the value the values of the concatenation of the two s
+        ///         source heaps</returns>
         public static Heap<Type> operator +(Heap<Type> heapOne, Heap<Type> heapTwo)
         {
-            Type[] temp = new Type[heapOne.size + heapTwo.size];
-            int index = 0;
-            for (int i = 1; i <= heapOne.size; i++)
+            // list contains the values of heapOne & heapTwo
+           Type[] list = new Type[heapOne.size + heapTwo.size];
+            int listIndex = 0;
+            for (int heapOneIndex = 1; heapOneIndex <= heapOne.size; heapOneIndex++)
             {
-                temp[index++] = heapOne.tree[i];
+                list[listIndex++] = heapOne.tree[heapOneIndex];
             }
-            for (int i = 1; i <= heapTwo.size; i++)
+            for (int heapTwoIndex = 1; heapTwoIndex <= heapTwo.size; heapTwoIndex++)
             {
-                temp[index++] = heapOne.tree[i];
+                list[listIndex++] = heapOne.tree[heapTwoIndex];
             }
-            Heap<Type> newHeap = new Heap<Type>(heapOne.compareFunct,temp);
+            // new heap  = heapOne + heapTwo
+            Heap<Type> newHeap = new Heap<Type>(heapOne.compareFunct,list);
             if (newHeap.size != heapOne.size + heapTwo.size)
             {
                 throw new InvalidLengthException("failed to create to new heap");
@@ -118,20 +125,20 @@ namespace Networking_Encryption
         public Func<Type,Type,bool> CompareFunction
         {
             get { return compareFunct; }
-            set { compareFunct = value; }
         }
         /// <summary>
-        /// function returns the lowest value found inside the heap 
+        /// function returns the either the max or the min of the heap specified by
+        /// function inputed by the user
         /// </summary>
         /// <returns>the smallest value found inside the heap</returns>
-        public Type FindMin()
+        public Type FindTop()
         {
             return tree[1];
         }
         /// <summary>
         /// function inserts given value into the heap
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="element">value to insert into heap</param>
         public void Insert(Type element)
         {
             if (size + 1 == tree.Length)
@@ -139,7 +146,7 @@ namespace Networking_Encryption
                 Array.Resize(ref tree, tree.Length * 2);
             }
             size++;
-            tree[size] = element;
+            tree[size] = element; // insert new element
             int tempLoc = size;
             while (tempLoc > 1)
             {
@@ -177,7 +184,7 @@ namespace Networking_Encryption
         /// <returns>the uppermost element of the heap</returns>
         public Type Replace(Type element)
         {
-            if (size <= 1)
+            if (IsEmpty == true)
             {
                 throw new InvalidOperationException(" no data to replace");
             }
@@ -203,7 +210,8 @@ namespace Networking_Encryption
         private void RealignHeap()
         {
             int CurrLoc = 1;
-            while (CurrLoc < size) // mem out of bounds of arr
+            bool swaped = true;
+            while (CurrLoc < size && swaped == true) // mem out of bounds of arr
             {
                 if ((2 * CurrLoc) <= size && (2 * CurrLoc + 1 <= size))
                 {
@@ -223,12 +231,12 @@ namespace Networking_Encryption
                         }
                         else
                         {
-                            break;
+                            swaped = false;
                         }
                     }
                     else
                     {
-                        break;
+                        swaped = false;
                     }
                 }
                 else if (2 * CurrLoc <= size && !EqualityComparer<Type>.Default.Equals(tree[2 * CurrLoc],
@@ -239,9 +247,8 @@ namespace Networking_Encryption
                 }
                 else
                 {
-                    break;
+                    swaped = false;
                 }
-                //CurrLoc++;
             }
         }
 
