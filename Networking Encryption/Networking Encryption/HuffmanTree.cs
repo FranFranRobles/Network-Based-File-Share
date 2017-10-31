@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 
@@ -9,7 +10,7 @@ namespace Networking_Encryption
 {
     public class HuffmanTree
     {
-        // class constants
+        
         private const int MAX_BYTE_VAL = 256;
 
         #region BinNode Class
@@ -65,7 +66,9 @@ namespace Networking_Encryption
 
         private BinNode root = null;
         private byte[] EncodedData = null;
+        private string[] hmanCode = null;
         private bool isNull = true;
+        private uint compressLen = 0;
 
         #region CTORS
         /// <summary>
@@ -76,6 +79,8 @@ namespace Networking_Encryption
             root = null;
             EncodedData = null;
             isNull = true;
+            compressLen = 0;
+
         }
         #endregion
 
@@ -99,7 +104,8 @@ namespace Networking_Encryption
         {
             EncodedData = Encoding.ASCII.GetBytes(inputText);
             makeTree(CalcFreqency());
-            return Encode();
+            GetEncodes();
+            return  SaveTree().ToString() + Encode().ToString();
         }
         /// <summary>
         /// Compresses a given file
@@ -110,7 +116,15 @@ namespace Networking_Encryption
         {
             GetFileBytes(inputFile);
             makeTree(CalcFreqency());
-            Encode(outputFile);
+            using (FileStream output = new FileStream(outputFile, FileMode.Open, FileAccess.Write))
+            {
+                byte[] len = GetLen();
+                byte[] tree = SaveTree();
+                byte[] temp = Encode();
+                output.Write(len, 0, len.Length);
+                output.Write(tree, 0, tree.Length);
+                output.Write(temp, 0, temp.Length);
+            }
         }
         #endregion
 
@@ -121,9 +135,12 @@ namespace Networking_Encryption
         /// <param name="encodedStr"> Enconded String</param>
         public string Decompress(string encodedStr)
         {
-            EncodedData = Encoding.ASCII.GetBytes(encodedStr);
-            makeTree(FindFreqencies());
+            EncodedData = MakeTable(Encoding.ASCII.GetBytes(encodedStr));
             return Decode();
+        }
+        private byte[] MakeTable(byte[] compressedData)
+        {
+            throw new NotImplementedException();
         }
         /// <summary>
         /// converts a compressed File back to its original state
@@ -178,7 +195,7 @@ namespace Networking_Encryption
                 throw new ArgumentException();
             }
             Heap<BinNode> heap = new Heap<BinNode>(CompareFunction, freqList);
-            while (!heap.IsEmpty)
+            while (heap.Size  > 1)
             {
                 heap.Insert(heap.Remove() + heap.Remove());
             }
@@ -214,18 +231,68 @@ namespace Networking_Encryption
         /// Compresses given data to into a huffman string
         /// </summary>
         /// <returns>a huffman string</returns>
-        private string Encode()
+        private byte[] Encode()
         {
-            throw new NotImplementedException();
+
+            List<byte> encodedData = new List<byte>();
+            byte temp = 0;
+            int count = 0;
+            for (int index = 0; index < EncodedData.Length; index++)
+            {
+                string code = hmanCode[EncodedData[index]];
+                for (int i = 0; i < code.Length; i++)
+                {
+                    if (code[i] == '1')
+                    {
+                        temp |= (byte)(1 << (count % 8));
+                    }
+                    if ((count + 1) % 8 == 0 && index < EncodedData.Length - 1)
+                    {
+                        encodedData.Add(temp);
+                        temp = 0;
+                    }
+                    count++;
+                }
+            }
+            encodedData.Add(temp);
+            return encodedData.ToArray();
         }
         /// <summary>
-        /// Compresses  given data into a huffman bin data
+        /// function retrieves the encodes for all possible values
+        /// <para>returns </para>
         /// </summary>
-        /// <param name="data">data to compress</param>
-        /// <param name="outputFile">place to save bindata</param>
-        private void Encode(string outputFile)
+        /// <returns></returns>
+        private void GetEncodes()
         {
-            throw new NotImplementedException();
+            var tasks = new List<Task<string>>();
+            hmanCode = new string[MAX_BYTE_VAL];
+            for (int value = 0; value < hmanCode.Length; value++)
+            {
+                tasks.Add(Task<string>.Factory.StartNew(() => GetCode((byte)value)));
+            }
+            Task.WaitAll(tasks.ToArray());
+            for (int index = 0; index < hmanCode.Length; index++)
+            {
+                hmanCode[index] = tasks[index].Result;
+            }
+        }
+        /// <summary>
+        /// function retrieves the huffman code for a given prefix
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string GetCode(byte prefix)
+        {
+            string code = "";
+            var temp = root;
+            while (!(temp.Element.Length == 1) && temp.Element.Contains(prefix))
+            {
+                bool found = temp.Left.Element.Contains(prefix);
+                temp = found == true ? temp.Left : temp.Right;
+                code += found ? "0" : "1";
+
+            }
+            return code;
         }
         #endregion
 
@@ -260,7 +327,12 @@ namespace Networking_Encryption
         /// <returns>If found returns frequency of the character, if not found returns -1</returns>
         public int Find(string character)
         {
-            throw new NotImplementedException();
+            if (character.Length != 1)
+            {
+                throw new InvalidLengthException("string length need to be 1 for you to do a search");
+            }
+            BinNode temp = FindNode(Encoding.ASCII.GetBytes(character)[0]);
+            return temp != null ? temp.Freq : -1;
         }
         /// <summary>
         /// attempts to find the given byte value within the huffman tree
@@ -270,7 +342,8 @@ namespace Networking_Encryption
         /// <returns>If found returns frequency of the character, if not found returns -1</returns>
         public int Find(byte value)
         {
-            throw new NotImplementedException();
+            BinNode temp = FindNode(value);
+            return temp != null ? temp.Freq : -1;
         }
         /// <summary>
         /// attempts to find the binNode associated to the given value
@@ -280,29 +353,87 @@ namespace Networking_Encryption
         /// <returns>Returns a BinNode if found, if not found return null</returns>
         private BinNode FindNode(byte value)
         {
-            throw new NotImplementedException();
+            BinNode curr = root;
+            while (curr.Element.Length > 1 && curr.Element[0] != value)
+            {
+                curr = curr.Left.Element.Contains(value) ? curr.Left : curr.Right;
+            }
+            if (!curr.Element.Contains(value))
+            {
+                curr = null;
+            }
+            return curr;
         }
         /// <summary>
         /// function returns true if the given param if found in the huffman tree
+        /// with a frequency greater than 0
         /// </summary>
         /// <param name="character">character to find</param>
         /// <returns>returns true if character if found</returns>
         public bool Contains(string character)
         {
-            throw new NotImplementedException();
+            if (character.Length != 1)
+            {
+                throw new InvalidLengthException("string length need to be 1 for you to do a search");
+            }
+            bool found = false;
+            BinNode temp = FindNode(Encoding.ASCII.GetBytes(character)[0]);
+            if (temp != null)
+            {
+                found = temp.Freq > 0 ? true : false;
+            }
+            return found;
         }
         /// <summary>
         /// function returns true if the given param if found in the huffman tree
+        /// with a frequency greater than 0
         /// </summary>
         /// <param name="value">value to find</param>
         /// <returns>returns true if the given value is found</returns>
         public bool Contains(byte value)
         {
-            throw new NotImplementedException();
+            bool found = false;
+            BinNode temp = FindNode(value);
+            if (temp != null)
+            {
+                found = temp.Freq > 0 ? true : false;
+            }
+            return found;
         }
         #endregion
 
         #region Misc functions
+        /// <summary>
+        /// function save the huffman codes for all elements of the tree 
+        /// into a byte[] array
+        /// </summary>
+        /// <returns>returns an array of huffman codes</returns>
+        private byte[] SaveTree()
+        {
+            List<byte> encode = new List<byte>();
+            byte temp = 0;
+            int count = 0;
+            for (int index = 0; index < hmanCode.Length; index++)
+            {
+                string code = hmanCode[index];
+                for (int bitAt = 0; bitAt < code.Length; bitAt++)
+                {
+                    if (code[bitAt] == '1')
+                    {
+                        temp |= (byte)(1 << (count % 8));
+                    }
+                    if ((count + 1) % 8 == 0 && index < EncodedData.Length - 1)
+                    {
+                        encode.Add(temp);
+                        temp = 0;
+                    }
+                    count++;
+                }
+                encode.Add((byte)index);
+            }
+            encode.Add(temp);
+            return encode.ToArray();
+        }
         /// <summary>
         /// function  compares two nodes  left < right
         /// <para> if left param is less than right returns true</para>
@@ -319,10 +450,31 @@ namespace Networking_Encryption
         /// </summary>
         public void Flush()
         {
+            EncodedData = null;
+            hmanCode = null;
+            isNull = true;
+            root = null;
+        }
+        /// <summary>
+        /// returns a binary hex reprsentation of the length of the compressed data
+        /// </summary>
+        /// <returns></returns>
+        private byte[] GetLen()
+        {
             throw new NotImplementedException();
         }
         /// <summary>
-        /// function gets all of the bytes found inside a file &  sets the encodedData[]
+        /// function reads the the length of the compressed data from the compressedData array
+        /// returns a sub array of the compressed data
+        /// </summary>
+        /// <param name="compressedData"></param>
+        /// <returns></returns>
+        private byte[] GetLen(byte[] compressedData)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// function gets all of the bytes found inside a file &  creates the encodedData[]
         /// attribute of the class
         /// </summary>
         /// <param name="inputFile">file to get all bytes from</param>
@@ -336,7 +488,6 @@ namespace Networking_Encryption
                     EncodedData = binReader.ReadBytes((int)len);
                 }
             }
-            throw new NotImplementedException();
         }
         #endregion
     }
