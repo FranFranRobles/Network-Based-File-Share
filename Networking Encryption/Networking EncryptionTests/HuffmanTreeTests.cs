@@ -17,6 +17,8 @@ namespace Networking_Encryption.Tests
         const string RESOURCE_CAT = "Resource Tests";
         const string ONE_FILE = "OneFile";
         const string TWO_FILE = "TwoFile";
+        const string COMPRESSION_CAT = "Compression Tests";
+        const string DECOMPRESSION_CAT = "Decompression Tests";
         const string RESOURCE = "Resource";
         const string DIF_FILE = "difFile";
         const string FILE_TO_COMPRESS = "fileToCompress";
@@ -60,6 +62,7 @@ namespace Networking_Encryption.Tests
         #region Compression Tests
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(COMPRESSION_CAT)]
         public void CompressStrTest()
         {
             string encodedData = tree.Compress(COMPRESSION_STR);
@@ -67,6 +70,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(COMPRESSION_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, ONE_FILE, DataAccessMethod.Sequential)]
         public void CompressFileTest()
         {
@@ -77,6 +81,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(COMPRESSION_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, TWO_FILE, DataAccessMethod.Sequential)]
         public void CompressFileSameFileTest()
         {
@@ -85,11 +90,14 @@ namespace Networking_Encryption.Tests
             string compressedFileOne = TestContext.DataRow[COMPRESSED_FILE + ONE_KEYWORD].ToString();
             string compressedFileTwo = TestContext.DataRow[COMPRESSED_FILE + TWO_KEYWORD].ToString();
             tree.Compress(fileToCompressOne, compressedFileOne);
+            tree.Flush();
             tree.Compress(fileToCompressTwo, compressedFileTwo);
+            tree.Flush();
             TestSameFileCompression(fileToCompressOne, fileToCompressTwo, compressedFileOne, compressedFileTwo);
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(COMPRESSION_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, DIF_FILE, DataAccessMethod.Sequential)]
         public void CompressFileDifFileTest()
         {
@@ -98,6 +106,7 @@ namespace Networking_Encryption.Tests
             string compressedFileOne = TestContext.DataRow[COMPRESSED_FILE + ONE_KEYWORD].ToString();
             string compressedFileTwo = TestContext.DataRow[COMPRESSED_FILE + TWO_KEYWORD].ToString();
             tree.Compress(fileToCompressOne, compressedFileOne);
+            tree.Flush();
             tree.Compress(fileToCompressTwo, compressedFileTwo);
             TestDifFileCompression(fileToCompressOne, fileToCompressTwo, compressedFileOne, compressedFileTwo);
         }
@@ -107,6 +116,7 @@ namespace Networking_Encryption.Tests
         #region Decompression Tests
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(DECOMPRESSION_CAT)]
         public void DecompressStrTest()
         {
             string encodedData = tree.Compress(COMPRESSION_STR);
@@ -118,6 +128,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(DECOMPRESSION_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, ONE_FILE, DataAccessMethod.Sequential)]
         public void DecompressFileTest()
         {
@@ -132,6 +143,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(DECOMPRESSION_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, TWO_FILE, DataAccessMethod.Sequential)]
         public void DecompressFileSameFileTest()
         {
@@ -152,6 +164,7 @@ namespace Networking_Encryption.Tests
         }
         [TestMethod()]
         [TestCategory(H_MAN_CAT)]
+        [TestCategory(DECOMPRESSION_CAT)]
         [DataSource(PROVIDER_TYPE, FILE, DIF_FILE, DataAccessMethod.Sequential)]
         public void DecompressFileDifFileTest()
         {
@@ -190,7 +203,7 @@ namespace Networking_Encryption.Tests
             for (int index = 0; index < ENCODE_LIST.Length; index++)
             {
                 Assert.IsTrue(tree.Contains(ENCODE_LIST[index]), "should be found in the tree");
-                Assert.AreEqual(ENCODE_FREQ[index], tree.Find(Convert.ToByte(ENCODE_LIST[index])),
+                Assert.AreEqual(ENCODE_FREQ[index], tree.Find(Encoding.ASCII.GetBytes(ENCODE_LIST[index])[0]),
                     "Incorrect freq Returned");
             }
         }
@@ -243,7 +256,7 @@ namespace Networking_Encryption.Tests
             for (int index = 0; index < ENCODE_LIST.Length; index++)
             {
                 Assert.IsTrue(tree.Contains(ENCODE_LIST[index]), "should be found in the tree");
-                Assert.AreEqual(ENCODE_FREQ[index], tree.Find(Convert.ToByte(ENCODE_LIST[index])),
+                Assert.AreEqual(ENCODE_FREQ[index], tree.Find(Encoding.ASCII.GetBytes(ENCODE_LIST[index])[0]),
                     "Incorrect freq Returned");
             }
         }
@@ -369,8 +382,6 @@ namespace Networking_Encryption.Tests
         {
             Assert.IsFalse(CheckFile.CompareFile(fileToCompress, compressedFile),
                 "Did not compress Correctly");
-            Assert.AreEqual(true, new FileInfo(fileToCompress).Length > new FileInfo(compressedFile).Length,
-                "file did not decrease in size");
         }
         /// <summary>
         /// test whether two equal files compressed the same
@@ -385,9 +396,11 @@ namespace Networking_Encryption.Tests
             TestFileCompression(uncompressedOne, compressedOne);
             TestFileCompression(uncompressedTwo, compressedTwo);
             Assert.IsTrue(CheckFile.CompareFile(uncompressedOne, uncompressedTwo),
-                " They are not the same files");
+                "{0} is not identical to {1}", Path.GetFileName(uncompressedOne),
+                Path.GetFileName(uncompressedTwo));
             Assert.IsTrue(CheckFile.CompareFile(compressedOne, compressedTwo),
-                " Files did not compress in the same format");
+                "{0} did not compress in the same format as {1}", Path.GetFileName(compressedOne),
+                Path.GetFileName(compressedTwo));
         }
         /// <summary>
         /// test to make sure that two different files compress differently

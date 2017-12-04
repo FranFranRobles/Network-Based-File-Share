@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
+using System.Diagnostics;
 
 namespace Networking_Encryption
 {
@@ -20,11 +21,11 @@ namespace Networking_Encryption
         private class BinNode
         {
             public byte[] Element;
-            public int Freq;
+            public uint Freq;
             public BinNode Left;
             public BinNode Right;
 
-            public BinNode(byte[] element, int frequency, BinNode left = null, BinNode right = null)
+            public BinNode(byte[] element, uint frequency, BinNode left = null, BinNode right = null)
             {
                 Element = element;
                 Freq = frequency;
@@ -68,7 +69,8 @@ namespace Networking_Encryption
         private byte[] EncodedData = null;
         private string[] hmanCode = null;
         private bool isNull = true;
-        private uint compressLen = 0;
+        private ulong comprssdLen = 0;
+        private uint[] freqList = null;
 
         #region CTORS
         /// <summary>
@@ -78,9 +80,9 @@ namespace Networking_Encryption
         {
             root = null;
             EncodedData = null;
+            freqList = null;
             isNull = true;
-            compressLen = 0;
-
+            comprssdLen = 0;
         }
         #endregion
 
@@ -103,9 +105,11 @@ namespace Networking_Encryption
         public string Compress(string inputText)
         {
             EncodedData = Encoding.ASCII.GetBytes(inputText);
-            makeTree(CalcFreqency());
+            MakeTree(CalcFreqency());
             GetEncodes();
-            return  SaveTree().ToString() + Encode().ToString();
+            byte[] compressedData = Encode();
+            isNull = false;
+            return GetLen().ToString() + GetFrq().ToString() + compressedData.ToString();
         }
         /// <summary>
         /// Compresses a given file
@@ -114,17 +118,31 @@ namespace Networking_Encryption
         /// <param name="outputFile">place to save compression</param>
         public void Compress(string inputFile, string outputFile)
         {
-            GetFileBytes(inputFile);
-            makeTree(CalcFreqency());
-            using (FileStream output = new FileStream(outputFile, FileMode.Open, FileAccess.Write))
+            ReadFile(inputFile);
+            MakeTree(CalcFreqency());
+            GetEncodes();
+            using (FileStream output = new FileStream(outputFile, FileMode.Truncate, FileAccess.Write))
             {
-                byte[] len = GetLen();
-                byte[] tree = SaveTree();
                 byte[] temp = Encode();
+                byte[] len = GetLen();
+                byte[] freqByte = GetFrq();
                 output.Write(len, 0, len.Length);
-                output.Write(tree, 0, tree.Length);
-                output.Write(temp, 0, temp.Length);
+                //output.Write(freqByte, 0, freqByte.Length);
+                //output.Write(temp, 0, temp.Length);
             }
+            isNull = false;
+        }
+
+        private byte[] GetFrq()
+        {
+            List<byte> holder = new List<byte>();
+            byte[] temp = null;
+            foreach (var item in freqList)
+            {
+                temp = BitConverter.GetBytes(item);
+                holder.AddRange(temp);
+            }
+            return holder.ToArray();
         }
         #endregion
 
@@ -135,11 +153,25 @@ namespace Networking_Encryption
         /// <param name="encodedStr"> Enconded String</param>
         public string Decompress(string encodedStr)
         {
-            EncodedData = MakeTable(Encoding.ASCII.GetBytes(encodedStr));
+            byte[] encodedData = GetLen(Encoding.ASCII.GetBytes(encodedStr));
+            MakeTree(encodedData);
             return Decode();
         }
-        private byte[] MakeTable(byte[] compressedData)
+        private void MakeTree(byte[] compressedData)
         {
+            List<byte> lst = new List<byte>();
+            freqList = new uint[MAX_BYTE_VAL];
+            int comCount = 0;
+            uint temp = 0;
+            for (int index = 0; index < freqList.Length; index++)
+            {
+                lst.Add(compressedData[comCount]);
+                lst.Add(compressedData[comCount + 1]);
+                lst.Add(compressedData[comCount + 2]);
+                lst.Add(compressedData[comCount + 3]);
+                temp = BitConverter.ToUInt32(lst.ToArray(),lst.Count);
+                lst.RemoveRange(0,lst.Count);
+            }
             throw new NotImplementedException();
         }
         /// <summary>
@@ -149,8 +181,8 @@ namespace Networking_Encryption
         /// <param name="outputFile">save location fo decompressed file</param>
         public void Decompress(string inputFile, string outputFile)
         {
-            GetFileBytes(inputFile);
-            makeTree(FindFreqencies());
+            ReadFile(inputFile);
+            MakeTree(FindFreqencies());
             Decode(outputFile);
         }
         #endregion
@@ -166,7 +198,7 @@ namespace Networking_Encryption
             {
                 throw new NullReferenceException("No data found to Encode");
             }
-            int[] freqList = new int[MAX_BYTE_VAL]; // for the domain of a byte[0,255]
+            freqList = new uint[MAX_BYTE_VAL]; // for the domain of a byte[0,255]
             for (int index = 0; index < EncodedData.Length; index++)
             {
                 freqList[EncodedData[index]]++;
@@ -188,7 +220,7 @@ namespace Networking_Encryption
         /// Creates a huffman tree off the freqency list
         /// </summary>
         /// <param name="freqList">list to make </param>
-        private void makeTree(BinNode[] freqList)
+        private void MakeTree(BinNode[] freqList)
         {
             if (freqList.Length <= 0)
             {
@@ -255,6 +287,7 @@ namespace Networking_Encryption
                 }
             }
             encodedData.Add(temp);
+            comprssdLen = (ulong)count;
             return encodedData.ToArray();
         }
         /// <summary>
@@ -325,14 +358,14 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="character">character to find</param>
         /// <returns>If found returns frequency of the character, if not found returns -1</returns>
-        public int Find(string character)
+        public long Find(string character)
         {
             if (character.Length != 1)
             {
                 throw new InvalidLengthException("string length need to be 1 for you to do a search");
             }
             BinNode temp = FindNode(Encoding.ASCII.GetBytes(character)[0]);
-            return temp != null ? temp.Freq : -1;
+            return temp != null ? (long)temp.Freq : -1;
         }
         /// <summary>
         /// attempts to find the given byte value within the huffman tree
@@ -340,10 +373,10 @@ namespace Networking_Encryption
         /// </summary>
         /// <param name="value">value to find</param>
         /// <returns>If found returns frequency of the character, if not found returns -1</returns>
-        public int Find(byte value)
+        public long Find(byte value)
         {
             BinNode temp = FindNode(value);
-            return temp != null ? temp.Freq : -1;
+            return temp != null ? (long)temp.Freq : -1;
         }
         /// <summary>
         /// attempts to find the binNode associated to the given value
@@ -354,7 +387,7 @@ namespace Networking_Encryption
         private BinNode FindNode(byte value)
         {
             BinNode curr = root;
-            while (curr.Element.Length > 1 && curr.Element[0] != value)
+            while (curr.Element.Length > 1 || curr.Element[0] != value)
             {
                 curr = curr.Left.Element.Contains(value) ? curr.Left : curr.Right;
             }
@@ -404,37 +437,6 @@ namespace Networking_Encryption
 
         #region Misc functions
         /// <summary>
-        /// function save the huffman codes for all elements of the tree 
-        /// into a byte[] array
-        /// </summary>
-        /// <returns>returns an array of huffman codes</returns>
-        private byte[] SaveTree()
-        {
-            List<byte> encode = new List<byte>();
-            byte temp = 0;
-            int count = 0;
-            for (int index = 0; index < hmanCode.Length; index++)
-            {
-                string code = hmanCode[index];
-                for (int bitAt = 0; bitAt < code.Length; bitAt++)
-                {
-                    if (code[bitAt] == '1')
-                    {
-                        temp |= (byte)(1 << (count % 8));
-                    }
-                    if ((count + 1) % 8 == 0 && index < EncodedData.Length - 1)
-                    {
-                        encode.Add(temp);
-                        temp = 0;
-                    }
-                    count++;
-                }
-                encode.Add((byte)index);
-            }
-            encode.Add(temp);
-            return encode.ToArray();
-        }
-        /// <summary>
         /// function  compares two nodes  left < right
         /// <para> if left param is less than right returns true</para>
         /// </summary>
@@ -450,6 +452,8 @@ namespace Networking_Encryption
         /// </summary>
         public void Flush()
         {
+            freqList = null;
+            comprssdLen = 0;
             EncodedData = null;
             hmanCode = null;
             isNull = true;
@@ -461,7 +465,7 @@ namespace Networking_Encryption
         /// <returns></returns>
         private byte[] GetLen()
         {
-            throw new NotImplementedException();
+            return BitConverter.GetBytes(comprssdLen);
         }
         /// <summary>
         /// function reads the the length of the compressed data from the compressedData array
@@ -471,14 +475,22 @@ namespace Networking_Encryption
         /// <returns></returns>
         private byte[] GetLen(byte[] compressedData)
         {
-            throw new NotImplementedException();
+            byte[] lenBytes = new byte[8];
+            byte[] destArr = new byte[compressedData.Length - 8]; 
+            for (int index = 0; index < lenBytes.Length; index++)
+            {
+                lenBytes[index] = compressedData[index];
+            }
+            comprssdLen = BitConverter.ToUInt64(lenBytes, 0);
+            Array.Copy(compressedData, destArr,compressedData.Length - 8);
+            return destArr;
         }
         /// <summary>
         /// function gets all of the bytes found inside a file &  creates the encodedData[]
         /// attribute of the class
         /// </summary>
         /// <param name="inputFile">file to get all bytes from</param>
-        private void GetFileBytes(string inputFile)
+        private void ReadFile(string inputFile)
         {
             using (FileStream inputStrm = new FileStream(inputFile,FileMode.Open,FileAccess.Read))
             {
