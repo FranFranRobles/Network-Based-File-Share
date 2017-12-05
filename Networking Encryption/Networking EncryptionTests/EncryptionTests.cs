@@ -123,8 +123,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
         }
@@ -138,8 +141,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
         }
@@ -153,8 +159,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
         }
@@ -168,8 +177,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
         }
@@ -204,8 +216,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryption(fileToEncrypt1,encryptedFile1,fileToEncrypt2,encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
         }
@@ -219,8 +234,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
         }
@@ -234,8 +252,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
         }
@@ -249,8 +270,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
         }
@@ -285,8 +309,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryption(fileToEncrypt1,encryptedFile1,fileToEncrypt2,encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
         }
@@ -300,8 +327,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
         }
@@ -315,8 +345,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
         }
@@ -330,8 +363,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
         }
@@ -366,8 +402,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
         }
@@ -381,8 +420,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
         }
@@ -396,8 +438,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
         }
@@ -411,8 +456,11 @@ namespace Networking_Encryption.Tests
             string fileToEncrypt2 = CheckFile.GetPath(TestContext.DataRow["fileToEncryptTwo"].ToString());
             string encryptedFile1 = CheckFile.GetPath(TestContext.DataRow["encryptedFileOne"].ToString());
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> taskEncryptorOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> taskEncryptorTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(taskEncryptorOne, taskEncryptorTwo);
+            keyOne = taskEncryptorOne.Result;
+            keyTwo = taskEncryptorTwo.Result;
             TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
         }
@@ -517,12 +565,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2, 
                 decryptedFile1, decryptedFile2);
         }
@@ -538,12 +590,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -559,12 +615,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -580,12 +640,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_TWO));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedDifKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -626,12 +690,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -647,12 +715,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -668,12 +740,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
-            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -689,12 +765,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_TWO, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedSameKey(keyOne, keyTwo);
-            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -736,12 +816,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -757,12 +841,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -778,12 +866,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
-            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1,
                 encryptedFile2, decryptedFile1, decryptedFile2);
         }
@@ -799,12 +891,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryption(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             TestDifSeedKey(keyOne, keyTwo);
-            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, 
                 encryptedFile2, decryptedFile1, decryptedFile2);
         }
@@ -845,12 +941,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -866,12 +966,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionDifFileTypes(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -887,12 +991,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.Encrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.Encrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
-            encryptor.Decrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.Decrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryptionDifFiles(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
@@ -908,12 +1016,16 @@ namespace Networking_Encryption.Tests
             string encryptedFile2 = CheckFile.GetPath(TestContext.DataRow["encryptedFileTwo"].ToString());
             string decryptedFile1 = CheckFile.GetPath(TestContext.DataRow["decryptedFileOne"].ToString());
             string decryptedFile2 = CheckFile.GetPath(TestContext.DataRow["decryptedFileTwo"].ToString());
-            keyOne = encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE);
-            keyTwo = encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE);
+            Task<KeyHolder> encryptOne = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt1, encryptedFile1, SEED_ONE, KEY_ONE));
+            Task<KeyHolder> encryptTwo = Task.Run(() => encryptor.CompressEncrypt(fileToEncrypt2, encryptedFile2, SEED_ONE, KEY_ONE));
+            Task.WaitAll(encryptOne, encryptTwo);
+            keyOne = encryptOne.Result;
+            keyTwo = encryptTwo.Result;
+            Task decryptOne = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne));
+            Task decryptTwo = Task.Run(() => encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo));
             TestFileEncryptionSameSeedKey(fileToEncrypt1, encryptedFile1, fileToEncrypt2, encryptedFile2);
             checkSameSeedKey(keyOne, keyTwo);
-            encryptor.DecompressDecrypt(encryptedFile1, decryptedFile1, keyOne);
-            encryptor.DecompressDecrypt(encryptedFile2, decryptedFile2, keyTwo);
+            Task.WaitAll(decryptOne, decryptTwo);
             TestFileDecryption(fileToEncrypt1, fileToEncrypt2, encryptedFile1, encryptedFile2,
                 decryptedFile1, decryptedFile2);
         }
