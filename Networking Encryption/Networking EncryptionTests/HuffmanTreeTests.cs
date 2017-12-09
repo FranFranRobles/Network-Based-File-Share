@@ -92,7 +92,6 @@ namespace Networking_Encryption.Tests
             tree.Compress(fileToCompressOne, compressedFileOne);
             tree.Flush();
             tree.Compress(fileToCompressTwo, compressedFileTwo);
-            tree.Flush();
             TestSameFileCompression(fileToCompressOne, fileToCompressTwo, compressedFileOne, compressedFileTwo);
         }
         [TestMethod()]
@@ -153,8 +152,12 @@ namespace Networking_Encryption.Tests
             string compressedFileTwo = TestContext.DataRow[COMPRESSED_FILE + TWO_KEYWORD].ToString();
             string decompressedOne = TestContext.DataRow[DECOMPRESSED_FILE + ONE_KEYWORD].ToString();
             string decompressedTwo = TestContext.DataRow[DECOMPRESSED_FILE + TWO_KEYWORD].ToString();
-            tree.Compress(fileToCompressOne, compressedFileOne);
-            tree.Compress(fileToCompressTwo, compressedFileTwo);
+            Task CmprsrOne = Task.Run(() => tree.Compress(fileToCompressOne, compressedFileOne));
+            Task CmprsrTwo = Task.Run(() => tree.Compress(fileToCompressTwo, compressedFileTwo));
+            Task.WaitAll(CmprsrOne, CmprsrTwo);
+            Task DcmprsrOne = Task.Run(() => tree.Decompress(compressedFileOne, decompressedOne));
+            Task DcmprsrTwo = Task.Run(() => tree.Decompress(compressedFileTwo, decompressedTwo));
+            Task.WaitAll(DcmprsrOne, DcmprsrTwo);
             TestSameFileCompression(fileToCompressOne, fileToCompressTwo, compressedFileOne, compressedFileTwo);
             tree.Decompress(compressedFileOne, decompressedOne);
             tree.Decompress(compressedFileTwo, decompressedTwo);
@@ -174,11 +177,13 @@ namespace Networking_Encryption.Tests
             string compressedFileTwo = TestContext.DataRow[COMPRESSED_FILE + TWO_KEYWORD].ToString();
             string decompressedOne = TestContext.DataRow[DECOMPRESSED_FILE + ONE_KEYWORD].ToString();
             string decompressedTwo = TestContext.DataRow[DECOMPRESSED_FILE + TWO_KEYWORD].ToString();
-            tree.Compress(fileToCompressOne, compressedFileOne);
-            tree.Compress(fileToCompressTwo, compressedFileTwo);
+            Task CmprsOne = Task.Run(() =>tree.Compress(fileToCompressOne, compressedFileOne));
+            Task ComprsTwo = Task.Run(() => tree.Compress(fileToCompressTwo, compressedFileTwo));
+            Task.WaitAll(CmprsOne, ComprsTwo);
             TestDifFileCompression(fileToCompressOne, fileToCompressTwo, compressedFileOne, compressedFileTwo);
-            tree.Decompress(compressedFileOne, decompressedOne);
-            tree.Decompress(compressedFileTwo, decompressedTwo);
+            Task DcmprsOne = Task.Run(() => tree.Decompress(compressedFileOne, decompressedOne));
+            Task DcmprsTwo = Task.Run(() => tree.Decompress(compressedFileTwo, decompressedTwo));
+            Task.WaitAll(DcmprsOne, DcmprsTwo);
             TestDifFileCompression(decompressedOne, decompressedTwo, compressedFileOne, compressedFileTwo);
             Assert.IsTrue(CheckFile.CompareFile(fileToCompressOne, decompressedOne), "Files are not the same");
             Assert.IsTrue(CheckFile.CompareFile(fileToCompressTwo, decompressedTwo), "Files are not the same");
