@@ -22,17 +22,9 @@ namespace Networking_Encryption
     {
         static void Main(string[] args)
         {
-            uint[] test = new uint[1000];
-            var a = new Random();
-            for (int i = 0; i < test.Length; i++)
-            {
-                test[i] = (uint)a.Next();
-            }
-            //Heap<uint> d = new Heap<uint>(CompareFunction, test);
+            int a = sizeof(ulong);
+            Console.Read();
         }
-        public bool CompareFunction(uint left, uint right)
-        {
-            return left < right ? true : false;
-        }
+
     }
 }

@@ -6,19 +6,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Networking_Encryption
 {
     public class HuffmanTree
     {
-        
+
         private const int MAX_BYTE_VAL = 256;
 
         #region BinNode Class
         /// <summary>
         /// Class holds an element a frequency associated to the elment and referencees to other nodes
         /// </summary>
-        private class BinNode
+        public class BinNode // make private when debug is finished
         {
             public byte[] Element;
             public uint Freq;
@@ -46,7 +47,7 @@ namespace Networking_Encryption
             /// <returns></returns>
             public static BinNode operator +(BinNode leftNode, BinNode rightNode)
             {
-                return new BinNode(MergeElements(leftNode.Element, rightNode.Element), 
+                return new BinNode(MergeElements(leftNode.Element, rightNode.Element),
                     (leftNode.Freq + rightNode.Freq), leftNode, rightNode);
             }
             /// <summary>
@@ -94,6 +95,7 @@ namespace Networking_Encryption
         {
             get { return isNull; }
         }
+
         #endregion
 
         #region Compress Functions
@@ -123,12 +125,12 @@ namespace Networking_Encryption
             GetEncodes();
             using (FileStream output = new FileStream(outputFile, FileMode.Truncate, FileAccess.Write))
             {
-                byte[] temp = Encode();
+                byte[] EncodedFile = Encode();
                 byte[] len = GetLen();
                 byte[] freqByte = GetFrq();
-                output.Write(len, 0, len.Length);
-                //output.Write(freqByte, 0, freqByte.Length);
-                //output.Write(temp, 0, temp.Length);
+                output.Write(len, 0, len.Length); // output length of orginal file
+                output.Write(freqByte, 0, freqByte.Length); // output freq table
+                output.Write(EncodedFile, 0, EncodedFile.Length); // output compressed file
             }
             isNull = false;
         }
@@ -181,9 +183,39 @@ namespace Networking_Encryption
         /// <param name="outputFile">save location fo decompressed file</param>
         public void Decompress(string inputFile, string outputFile)
         {
+            Flush(); // clear any old data
             ReadFile(inputFile);
+            FindLen();
             MakeTree(FindFreqencies());
             Decode(outputFile);
+
+            // encode
+            ReadFile(inputFile);
+            MakeTree(CalcFreqency());
+            GetEncodes();
+            using (FileStream output = new FileStream(outputFile, FileMode.Truncate, FileAccess.Write))
+            {
+                byte[] EncodedFile = Encode();
+                byte[] len = GetLen();
+                byte[] freqByte = GetFrq();
+                output.Write(len, 0, len.Length); // output length of orginal file
+                output.Write(freqByte, 0, freqByte.Length); // output freq table
+                output.Write(EncodedFile, 0, EncodedFile.Length); // output compressed file
+            }
+
+        }
+        private void FindLen()
+        {
+            const int ULONG_LEN = 8;
+            byte[] lenAsBytes = new byte[ULONG_LEN];
+            // read all data into a queue and use that instead
+            for (int index = 0; index < ULONG_LEN; index++)
+            {
+                lenAsBytes[index] = EncodedData[index];
+            }
+            // read 
+            //comprssdLen = new ulong[ULONG_LEN];
+            //return BitConverter.GetBytes(comprssdLen);
         }
         #endregion
 
@@ -297,16 +329,17 @@ namespace Networking_Encryption
         /// <returns></returns>
         private void GetEncodes()
         {
-            var tasks = new List<Task<string>>();
             hmanCode = new string[MAX_BYTE_VAL];
-            for (int value = 0; value < hmanCode.Length; value++)
-            {
-                tasks.Add(Task<string>.Factory.StartNew(() => GetCode((byte)value)));
-            }
-            Task.WaitAll(tasks.ToArray());
+            //List<Task<string>> tasks = new List<Task<string>>();
+            //for (int searchVal = 0; searchVal < hmanCode.Length; searchVal++)
+            //{
+            //    tasks.Add(Task.Run(() => GetCode((byte)searchVal)));
+            //    Thread.Sleep(1);
+            //} // find a way to make the threads run faster without thread sleep
+            //Task.WaitAll(tasks.ToArray());
             for (int index = 0; index < hmanCode.Length; index++)
             {
-                hmanCode[index] = tasks[index].Result;
+                hmanCode[index] = GetCode((byte)index);
             }
         }
         /// <summary>
@@ -460,7 +493,7 @@ namespace Networking_Encryption
             root = null;
         }
         /// <summary>
-        /// returns a binary hex reprsentation of the length of the compressed data
+        /// returns a binary reprsentation of the length of the compressed data
         /// </summary>
         /// <returns></returns>
         private byte[] GetLen()

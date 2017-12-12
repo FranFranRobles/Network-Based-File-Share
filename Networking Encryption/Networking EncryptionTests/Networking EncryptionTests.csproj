@@ -67,6 +67,7 @@
     <Compile Include="HuffmanTreeTests.cs" />
     <Compile Include="KeyHolderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueueTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="EncryptionTestFiles\DecryptedPdfOne.pdf" />
