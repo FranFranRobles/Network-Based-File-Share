@@ -24,18 +24,6 @@
     <Capacity>10000</Capacity>
   </CTOR_Settings>
   <CTOR_Settings>
-    <Size>500000</Size>
-    <Capacity>500000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>2500000</Size>
-    <Capacity>2500000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>10000000</Size>
-    <Capacity>10000000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
     <Size>0</Size>
     <Capacity>0</Capacity>
   </CTOR_Settings>
@@ -60,18 +48,6 @@
     <Capacity>10000</Capacity>
   </CTOR_Settings>
   <CTOR_Settings>
-    <Size>400000</Size>
-    <Capacity>500000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>2100000</Size>
-    <Capacity>2500000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>8000000</Size>
-    <Capacity>10000000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
     <Size>0</Size>
     <Capacity>0</Capacity>
   </CTOR_Settings>
@@ -94,17 +70,5 @@
   <CTOR_Settings>
     <Size>10000</Size>
     <Capacity>9000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>500000</Size>
-    <Capacity>400000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>2500000</Size>
-    <Capacity>2100000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>10000000</Size>
-    <Capacity>8000000</Capacity>
   </CTOR_Settings>
 </Queue>

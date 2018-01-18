@@ -48,7 +48,7 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void CapacityCTORTest()
         {
-            uint capacity = Convert.ToUInt32(TestContext.DataRow[CAPACITY]);
+            int capacity = Convert.ToInt32(TestContext.DataRow[CAPACITY]);
             queue = new Queue<int>(capacity);
             Assert.AreEqual(0, queue.Size, "Invalid Size Found");
             Assert.AreEqual(capacity, queue.Capacity, "Invalid Size Found");
@@ -56,9 +56,9 @@ namespace Networking_Encryption.Tests
         [TestMethod()]
         [TestCategory(CATEGORY)]
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
-        public void arrayCTORTest()
+        public void ArrayCTORTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intializerList = listGen(size);
             queue = new Queue<int>(intializerList);
             Assert.AreEqual(size, queue.Size, "Invalid Size Found");
@@ -70,7 +70,7 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void CopyCTORTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intializerList = listGen(size);
             queue = new Queue<int>(intializerList);
             Assert.AreEqual(size, queue.Size, "Invalid Size Found");
@@ -80,14 +80,20 @@ namespace Networking_Encryption.Tests
             Assert.AreEqual(queue.Size, testQueue.Size, "Copied queue is not of same length as original queue");
             Assert.AreEqual(queue.Capacity, testQueue.Capacity, "Copied queue is not of same length as orginal");
             TestContainment(intializerList, testQueue);
+            queue.Clear();
+            foreach (int num in intializerList)
+            {
+                Assert.IsFalse(queue.Contains(num), "{0} should not be found in queue", num);
+                Assert.IsTrue(testQueue.Contains(num), "{0} should be found within the queue", num);
+            }
         }
         [TestMethod()]
         [TestCategory(CATEGORY)]
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void CapWithCpyCTORTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
-            uint cap = Convert.ToUInt32(TestContext.DataRow[CAPACITY]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int cap = Convert.ToInt32(TestContext.DataRow[CAPACITY]);
             int[] intializerList = listGen(size);
             queue = new Queue<int>(intializerList);
             Assert.AreEqual(size, queue.Size, "Invalid Size Found");
@@ -98,14 +104,20 @@ namespace Networking_Encryption.Tests
             Assert.IsTrue(cap <= testQueue.Capacity, "que was intialize to invalid capcacity lenght");
             Assert.IsTrue(queue.Capacity <= testQueue.Capacity, "Copied queue is not of same length as orginal");
             TestContainment(intializerList, testQueue);
+            queue.Clear();
+            foreach (int num in intializerList)
+            {
+                Assert.IsFalse(queue.Contains(num), "{0} should not be found in queue", num);
+                Assert.IsTrue(testQueue.Contains(num), "{0} should be found within the queue", num);
+            }
         }
         [TestMethod()]
         [TestCategory(CATEGORY)]
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void CapWithArrayCTORTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
-            uint cap = Convert.ToUInt32(TestContext.DataRow[CAPACITY]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int cap = Convert.ToInt32(TestContext.DataRow[CAPACITY]);
             int[] intializerList = listGen(size);
             queue = new Queue<int>(cap, intializerList);
             Assert.AreEqual(size, queue.Size, "Invalid Size Found");
@@ -121,7 +133,7 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void EnqueTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intlist = listGen(size);
             foreach (int num in intlist)
             {
@@ -136,7 +148,7 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void DequeNotEmptyTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intlist = listGen(size);
             foreach (int num in intlist)
             {
@@ -153,7 +165,7 @@ namespace Networking_Encryption.Tests
         [TestMethod()]
         [TestCategory(CATEGORY)]
         [TestCategory(EXCEPTION)]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(EmptyQueueException))]
         public void DequeEmptyTest()
         {
             Assert.AreEqual(0, queue.Size, "invalid size found");
@@ -177,7 +189,7 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void ClearNotEmptyTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intList = listGen(size);
             queue = new Queue<int>(intList);
             Assert.AreEqual(size, queue.Size, "invalid size found");
@@ -205,7 +217,7 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void ContainsNotEmptyTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intList = listGen(size);
             int NotFoundVal = -1;
             queue = new Queue<int>(intList);
@@ -221,7 +233,7 @@ namespace Networking_Encryption.Tests
         [TestMethod()]
         [TestCategory(CATEGORY)]
         [TestCategory(EXCEPTION)]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(EmptyQueueException))]
         public void PeekEmptyTest()
         {
             queue.Peek();
@@ -231,11 +243,18 @@ namespace Networking_Encryption.Tests
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void PeekNotEmptyTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intList = listGen(size);
             queue = new Queue<int>(intList);
             Assert.AreEqual(size, queue.Size, "invalid size found");
-            Assert.AreNotEqual(0, queue.Capacity, "queu capcity should not be zero");
+            if (size == 0)
+            {
+                Assert.AreEqual(0, queue.Capacity, "queue capcity should be zero");
+            }
+            else
+            {
+                Assert.AreNotEqual(0, queue.Capacity, "queue capcity should not be zero");
+            }
             TestContainment(intList, queue);
             foreach (int num in intList)
             {
@@ -250,26 +269,57 @@ namespace Networking_Encryption.Tests
         {
             Assert.AreEqual(0, queue.Size, "invalid size found");
             Assert.AreEqual(0, queue.Capacity, "invalid queue capacity found");
-            Assert.IsNull(queue.ToArray(), " array is not null");
+            Assert.AreEqual(0, queue.ToArray().Length, " array should be empty");
         }
         [TestMethod()]
         [TestCategory(CATEGORY)]
         [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
         public void ToArrayNotEmptyTest()
         {
-            uint size = Convert.ToUInt32(TestContext.DataRow[SIZE]);
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
             int[] intList = listGen(size);
             queue = new Queue<int>(intList);
             Assert.AreEqual(size, queue.Size, "invalid size found");
-            Assert.AreNotEqual(0, queue.Capacity, "queu capcity should not be zero");
-            foreach (int num in intList)
+            if (size == 0)
             {
-                Assert.IsTrue(queue.Contains(num), "value should be found");
-                Assert.AreEqual(num, queue.Peek(), "incorrect value found");
-                Assert.AreEqual(num, queue.Deque(), "incorrect value removed");
+                Assert.AreEqual(0, queue.Capacity, "queue capcity should be zero");
+            }
+            else
+            {
+                Assert.AreNotEqual(0, queue.Capacity, "queue capcity should not be zero");
+            }
+            int[] queList = queue.ToArray();
+            Assert.AreEqual(intList.Length, queList.Length, "invalid Size found");
+            for (int index = 0; index < intList.Length; index++)
+            {
+                Assert.AreEqual(intList[index], queList[index], "different value was expected");
             }
         }
-
+        [TestMethod()]
+        [TestCategory(CATEGORY)]
+        [DataSource(PROVIDER_TYPE, TEST_FILE, TEST_NODE, DataAccessMethod.Sequential)]
+        public void resizeTest()
+        {
+            int size = Convert.ToInt32(TestContext.DataRow[SIZE]);
+            int[] intializerList = listGen(size);
+            queue = new Queue<int>(intializerList);
+            Assert.AreEqual(size, queue.Size, "Invalid Size Found");
+            Assert.IsTrue(queue.Capacity >= size, "invalid Capacity found");
+            TestContainment(intializerList, queue);
+            { // increase queue capacity test
+                int cap = queue.Capacity;
+                cap *= 2;
+                queue.Capacity = cap;
+                Assert.AreEqual(cap, queue.Capacity, "incorrect resize capacity found");
+            }
+            {// decrease queue capacity test
+                int cap = queue.Capacity;
+                int newCap = cap / 2;
+                Assert.ThrowsException<InvalidLengthException>(() => queue.Capacity = newCap,
+                    "Invalid len exception was expected");
+                Assert.AreEqual(cap, queue.Capacity, "incorrect resize capacity found");
+            }
+        }
         #region Test Helper Functions
         /// <summary>
         /// function fills an array with random numbers
@@ -277,7 +327,7 @@ namespace Networking_Encryption.Tests
         /// </summary>
         /// <param name="size">holds the size of the array to be intialized</param>
         /// <returns>Returns an array with randomly filled numbers</returns>
-        static int[] listGen(uint size)
+        static int[] listGen(int size)
         {
             int[] list = new int[size];
             Random ranGen = new Random();
