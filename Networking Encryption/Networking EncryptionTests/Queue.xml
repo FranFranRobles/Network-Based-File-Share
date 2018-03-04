@@ -3,72 +3,64 @@
     <Size>0</Size>
     <Capacity>0</Capacity>
   </CTOR_Settings>
+   <CTOR_Settings>
+    <Size>0</Size>
+    <Capacity>1</Capacity>
+  </CTOR_Settings>
   <CTOR_Settings>
     <Size>1</Size>
     <Capacity>1</Capacity>
   </CTOR_Settings>
+   <CTOR_Settings>
+    <Size>1</Size>
+    <Capacity>0</Capacity>
+  </CTOR_Settings>
   <CTOR_Settings>
     <Size>10</Size>
+    <Capacity>10</Capacity>
+  </CTOR_Settings>
+   <CTOR_Settings>
+    <Size>10</Size>
+    <Capacity>7</Capacity>
+  </CTOR_Settings>
+     <CTOR_Settings>
+    <Size>7</Size>
     <Capacity>10</Capacity>
   </CTOR_Settings>
   <CTOR_Settings>
     <Size>100</Size>
     <Capacity>100</Capacity>
   </CTOR_Settings>
+   <CTOR_Settings>
+    <Size>100</Size>
+    <Capacity>90</Capacity>
+  </CTOR_Settings>
+     <CTOR_Settings>
+    <Size>90</Size>
+    <Capacity>100</Capacity>
+  </CTOR_Settings>
   <CTOR_Settings>
     <Size>1000</Size>
+    <Capacity>1000</Capacity>
+  </CTOR_Settings>
+   <CTOR_Settings>
+    <Size>1000</Size>
+    <Capacity>900</Capacity>
+  </CTOR_Settings>
+     <CTOR_Settings>
+    <Size>900</Size>
     <Capacity>1000</Capacity>
   </CTOR_Settings>
   <CTOR_Settings>
     <Size>10000</Size>
     <Capacity>10000</Capacity>
   </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>0</Size>
-    <Capacity>0</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>0</Size>
-    <Capacity>1</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>6</Size>
-    <Capacity>10</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>75</Size>
-    <Capacity>100</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>600</Size>
-    <Capacity>1000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>9500</Size>
-    <Capacity>10000</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>0</Size>
-    <Capacity>0</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>1</Size>
-    <Capacity>0</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>10</Size>
-    <Capacity>6</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>100</Size>
-    <Capacity>70</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
-    <Size>1000</Size>
-    <Capacity>700</Capacity>
-  </CTOR_Settings>
-  <CTOR_Settings>
+   <CTOR_Settings>
     <Size>10000</Size>
     <Capacity>9000</Capacity>
+  </CTOR_Settings>
+     <CTOR_Settings>
+    <Size>9000</Size>
+    <Capacity>10000</Capacity>
   </CTOR_Settings>
 </Queue>

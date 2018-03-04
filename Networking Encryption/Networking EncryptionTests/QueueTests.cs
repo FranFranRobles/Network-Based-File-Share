@@ -101,8 +101,7 @@ namespace Networking_Encryption.Tests
             TestContainment(intializerList, queue);
             Queue<int> testQueue = new Queue<int>(cap,queue);
             Assert.AreEqual(queue.Size, testQueue.Size, "Copied queue is not of same length as original queue");
-            Assert.IsTrue(cap <= testQueue.Capacity, "que was intialize to invalid capcacity lenght");
-            Assert.IsTrue(queue.Capacity <= testQueue.Capacity, "Copied queue is not of same length as orginal");
+            Assert.IsTrue(cap <= testQueue. Capacity, "que was intialize to invalid capcacity lenght");
             TestContainment(intializerList, testQueue);
             queue.Clear();
             foreach (int num in intializerList)
@@ -193,7 +192,10 @@ namespace Networking_Encryption.Tests
             int[] intList = listGen(size);
             queue = new Queue<int>(intList);
             Assert.AreEqual(size, queue.Size, "invalid size found");
-            Assert.AreNotEqual(0, queue.Capacity, "Capacity should not be zero");
+            if (size > 0)
+            {
+                Assert.AreNotEqual(0, queue.Capacity, "Capacity should not be zero");
+            }
             TestContainment(intList, queue);
             queue.Clear();
             foreach (int num in intList)
@@ -222,7 +224,10 @@ namespace Networking_Encryption.Tests
             int NotFoundVal = -1;
             queue = new Queue<int>(intList);
             Assert.AreEqual(size, queue.Size, "invalid size found");
-            Assert.AreNotEqual(0, queue.Capacity, "queu capcity should not be zero");
+            if (size > 0)
+            {
+                Assert.AreNotEqual(0, queue.Capacity, "queue capcity should not be zero");
+            }
             TestContainment(intList, queue);
             foreach (int num in intList)
             {
@@ -314,9 +319,8 @@ namespace Networking_Encryption.Tests
             }
             {// decrease queue capacity test
                 int cap = queue.Capacity;
-                int newCap = cap / 2;
-                Assert.ThrowsException<InvalidLengthException>(() => queue.Capacity = newCap,
-                    "Invalid len exception was expected");
+                int newCap = cap / 2;// cap = 0 no exception
+                queue.Capacity = newCap;
                 Assert.AreEqual(cap, queue.Capacity, "incorrect resize capacity found");
             }
         }

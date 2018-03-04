@@ -109,10 +109,13 @@ namespace Networking_Encryption
             size = cpyQueue.size;
             front = cpyQueue.front;
             back = cpyQueue.back;
-            queue = new Type[cpyQueue.queue.Length];
-            for (int index = 0; index < queue.Length; index++)
+            if (size > 0)
             {
-                queue[index] = cpyQueue.queue[index];
+                queue = new Type[cpyQueue.queue.Length];
+                for (int index = 0; index < queue.Length; index++)
+                {
+                    queue[index] = cpyQueue.queue[index];
+                }
             }
         }
         /// <summary>
@@ -258,7 +261,7 @@ namespace Networking_Encryption
             Type[] tempArr = null;
             if (newSize == -1)
             {
-                tempArr = new Type[queue.Length * 2];
+                tempArr = new Type[queue.Length * 2 + 1];
             }
             else if (newSize > queue.Length)
             {
