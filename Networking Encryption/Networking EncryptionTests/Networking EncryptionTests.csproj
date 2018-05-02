@@ -81,9 +81,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Networking Encryption\Networking Encryption.csproj">
+    <ProjectReference Include="..\Networking Encryption\Logic Engine.csproj">
       <Project>{16D0ABDC-EB57-4196-9B1C-248DDECE8C42}</Project>
-      <Name>Networking Encryption</Name>
+      <Name>Logic Engine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
