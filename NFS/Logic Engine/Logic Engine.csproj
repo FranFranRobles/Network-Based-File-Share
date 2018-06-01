@@ -7,7 +7,7 @@
     <ProjectGuid>{352AFFA1-71CA-49B8-B3BF-E3C77F420A71}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Logic_Engine</RootNamespace>
-    <AssemblyName>Logic_Engine</AssemblyName>
+    <AssemblyName>Logic Engine</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -42,11 +42,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Server.cs" />
+    <Compile Include="Controllers\ServerClient.cs" />
+    <Compile Include="DataStructures\BinaryTree.cs" />
+    <Compile Include="DataStructures\Heap.cs" />
+    <Compile Include="DataStructures\HuffmanTree.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Entities\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

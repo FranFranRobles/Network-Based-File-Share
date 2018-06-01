@@ -81,9 +81,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NFS\Logic Engine.csproj">
+    <ProjectReference Include="..\NFS\LE.csproj">
       <Project>{16D0ABDC-EB57-4196-9B1C-248DDECE8C42}</Project>
-      <Name>Logic Engine</Name>
+      <Name>LE</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
